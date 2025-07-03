@@ -103,9 +103,10 @@ class Fireborne(pygame.sprite.Sprite):
     frames = self.animations.get(self.state, self.animations["idle"])
     
     if self.state == "death":
-      if self.frame_index < len(frames) - 1:
+      if self.frame_index < 10:
         self.frame_index += self.animation_speed
       else:
+        self.frame_index = len(frames) - 1  # freeze at last frame
         self.kill()
 
     elif self.state == "attack":
