@@ -9,6 +9,7 @@ from scripts.Slime import Slime
 from scripts.Nightborne import Nightborne
 from scripts.Fireborne import Fireborne
 from scripts.SkeletonArcher import SkeletonArcher
+from scripts.Necromancer import Necromancer
 from scripts.Projectile import Projectile
 from scripts.combat_manager import CombatManager
 
@@ -46,13 +47,15 @@ def main():
   skeleton = Skeleton(1900, SCREEN_HEIGHT - 185, player)
   slime = Slime(3000, SCREEN_HEIGHT - 120, player)
   nightborne = Nightborne(3900, SCREEN_HEIGHT - 300, player)
-  fireborne = Fireborne(900, SCREEN_HEIGHT - 370, player)
+  fireborne = Fireborne(2000, SCREEN_HEIGHT - 370, player)
   skeletonAcher = SkeletonArcher(1900, SCREEN_HEIGHT - 305, player, projectile_group)
+  necromancer = Necromancer(1000, SCREEN_HEIGHT - 305, player, projectile_group)
   enemy_group.add(skeleton)
   enemy_group.add(slime)
   enemy_group.add(nightborne)
   enemy_group.add(fireborne)
   enemy_group.add(skeletonAcher)
+  enemy_group.add(necromancer)
   combat_manager = CombatManager(player, enemy_group) # Combat manager
 
   while running:
@@ -76,9 +79,9 @@ def main():
     skeletonAcher_offset_hitbox = skeletonAcher_attack_hitbox.move(-camera.get_offset(), 0)
     offset_skeletonAcher_hitbox = skeletonAcher.hitbox.move(-camera.get_offset(), 0)
 
-    fireborne_attack_hitbox = fireborne.get_attack_hitbox()
-    fireborne_offset_hitbox = fireborne_attack_hitbox.move(-camera.get_offset(), 0)
-    offset_fireborne_hitbox = fireborne.hitbox.move(-camera.get_offset(), 0)
+    necromancer_attack_hitbox = necromancer.get_attack_hitbox()
+    necromancer_offset_hitbox = necromancer_attack_hitbox.move(-camera.get_offset(), 0)
+    offset_necromancer_hitbox = necromancer.hitbox.move(-camera.get_offset(), 0)
  
     combat_manager.check_collisions() # Check combat
 
@@ -98,6 +101,8 @@ def main():
     # pygame.draw.rect(screen, (0, 255, 0), offset_player_hitbox, 2)
     pygame.draw.rect(screen, (255, 0, 0), skeletonAcher_offset_hitbox, 2)
     pygame.draw.rect(screen, (0, 255, 0), offset_skeletonAcher_hitbox, 2)
+    pygame.draw.rect(screen, (255, 0, 0), necromancer_offset_hitbox, 2)
+    pygame.draw.rect(screen, (0, 255, 0), offset_necromancer_hitbox, 2)
 
     # Draw camera
     for i, x in enumerate(range(0, level_width, tile_size * 2)):
