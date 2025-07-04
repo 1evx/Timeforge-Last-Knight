@@ -1,5 +1,5 @@
 import pygame
-from scripts import settings
+from scripts import Settings
 from scripts.utils import load_sprite_folder
 
 class Valk(pygame.sprite.Sprite):
@@ -161,20 +161,20 @@ class Valk(pygame.sprite.Sprite):
       return
 
     if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:
-      self.velocity_y = settings.JUMP_VELOCITY
+      self.velocity_y = Settings.JUMP_VELOCITY
       self.on_ground = False
       self.state = "jump"
       return
 
     if keys[pygame.K_a]:
-      self.rect.x -= settings.PLAYER_SPEED
+      self.rect.x -= Settings.PLAYER_SPEED
       self.direction = -1
       self.facing = -1
       self.state = "run"
       return
 
     if keys[pygame.K_d]:
-      self.rect.x += settings.PLAYER_SPEED
+      self.rect.x += Settings.PLAYER_SPEED
       self.direction = 1
       self.facing = 1
       self.state = "run"
@@ -188,12 +188,12 @@ class Valk(pygame.sprite.Sprite):
 
 
   def apply_gravity(self):
-    self.velocity_y += settings.GRAVITY
+    self.velocity_y += Settings.GRAVITY
     self.rect.y += self.velocity_y
 
     # Player Y Postion Constraints
-    if self.rect.bottom >= settings.SCREEN_HEIGHT - 45:
-      self.rect.bottom = settings.SCREEN_HEIGHT - 45
+    if self.rect.bottom >= Settings.SCREEN_HEIGHT - 45:
+      self.rect.bottom = Settings.SCREEN_HEIGHT - 45
       self.velocity_y = 0
       self.on_ground = True
 
