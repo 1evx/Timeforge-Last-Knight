@@ -4,7 +4,7 @@ import pygame
 from scripts.Settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from scripts.Valk import Valk
 from scripts.Background import ParallaxBackground
-from scripts.load_and_slice import slice_tileset
+from scripts.utils import load_tileset, slice_tileset, generate_tile_row
 from scripts.camera import Camera
 from scripts.Skeleton import Skeleton
 from scripts.Slime import Slime
@@ -13,9 +13,62 @@ from scripts.Fireborne import Fireborne
 from scripts.SkeletonArcher import SkeletonArcher
 from scripts.Necromancer import Necromancer
 from scripts.Shop import Shop
+from scripts.Platform import Platform
 from scripts.Projectile import Projectile
 from scripts.combat_manager import CombatManager
 
+DECOR_DEFINITIONS = {
+  "Lamp": {
+    "path": "assets/decorations/lamp.png",
+    "scale": 2.5
+  },
+  "Rock2": {
+    "path": "assets/decorations/rock_2.png",
+    "scale": 2.2
+  },
+  "Wall": {
+    "path": "assets/decorations/wall_1.png",
+    "scale": 1.3
+  },
+  "Fireplace": {
+    "path": "assets/decorations/fireplace.png",
+    "scale": 1
+  },
+  "Sign": {
+    "path": "assets/decorations/sign.png",
+    "scale": 2.2
+  },
+  "Fence1": {
+    "path": "assets/decorations/fence_1.png",
+    "scale": 2.5
+  },
+  "Fence2": {
+    "path": "assets/decorations/fence_2.png",
+    "scale": 2.5
+  },
+  "Barricade": {
+    "path": "assets/decorations/barricade_1.png",
+    "scale": 2,
+  },
+  "Vase_1": {
+    "path": "assets/decorations/vase_1.png",
+    "scale": 2,
+  },
+  "Cart": {
+    "path": "assets/decorations/cart_1.png",
+    "scale": 2.1,
+    "rotation": -15
+  },
+  "FallenWhiteVanguard": {
+    "path": "assets/sprites/WhiteVanguard/death/fall_back_5.png",
+    "scale": 3
+  },
+  "FallenSkeleton": {
+    "path": "assets/sprites/WhiteVanguard/death/fall_back_5.png",
+    "scale": 3
+  },
+  # 'Shop' stays handled separately since it's a class.
+}
 
 class Level:
   def __init__(self, screen, level_data):
@@ -35,19 +88,33 @@ class Level:
     self.background = ParallaxBackground(level_data["backgrounds"], SCREEN_WIDTH, SCREEN_HEIGHT)
 
     # Ground tiles
+    tileset_image = pygame.image.load(level_data["tileset"]).convert_alpha()
+    self.tileset_tiles = load_tileset(tileset_image, 24, 24, scale=2)
+
+    self.platforms = pygame.sprite.Group()
+    for tile_data in level_data["tiles"]:
+      x, y = tile_data["pos"]
+      index = tile_data["tile_index"]
+      tile_image = self.tileset_tiles[index]
+      tile = Platform(x, y, tile_image)
+      self.platforms.add(tile)
+
     self.ground_tile = slice_tileset(level_data["tileset"], self.tile_size, self.tile_size, scale=2)
 
     # Deco
     self.decor_group = pygame.sprite.Group()
 
     for obj in level_data["decor"]:
-      x, y = obj["pos"]
-      if obj["type"] == "Shop":
-        shop = Shop(x, y)
+      decor_type = obj["type"]
+      pos = obj["pos"]
+
+      if decor_type == "Shop":
+        shop = Shop(*pos)
         self.decor_group.add(shop)
-      # elif obj["type"] == "Bush":
-      #   bush = Bush(obj["x"], obj["y"])
-      #   self.decor_group.add(bush)
+      else:
+        sprite = self.create_decor_sprite(decor_type, pos)
+        self.decor_group.add(sprite)
+   
 
     # Player
     self.player = Valk(100, SCREEN_HEIGHT - 200)
@@ -98,9 +165,9 @@ class Level:
       self.combat_manager.check_collisions()
 
       # Update
-      self.player.update(keys)
-      self.enemy_group.update()
+      self.player.update(keys, self.platforms)
       self.decor_group.update()
+      self.enemy_group.update()
       self.projectile_group.update()
       self.camera.update()
       self.background.update(self.camera.get_offset())
@@ -110,14 +177,17 @@ class Level:
       self.projectile_group.draw(self.screen)
 
       # Draw camera debug
+      for deco in self.decor_group:
+        self.screen.blit(deco.image, self.camera.apply(deco.rect))
+
       for i, x in enumerate(range(0, self.level_width, self.tile_size * 2)):
         screen_x = x - self.camera.get_offset()
         if -self.tile_size * 2 <= screen_x <= SCREEN_WIDTH:
           tile = self.ground_tile[3]
           self.screen.blit(tile, (screen_x, SCREEN_HEIGHT - 50))
 
-      for decor in self.decor_group:
-        self.screen.blit(decor.image, self.camera.apply(decor.rect))
+      for tile in self.platforms:
+        self.screen.blit(tile.image, self.camera.apply(tile.rect))
 
       for enemy in self.enemy_group:
         self.screen.blit(enemy.image, self.camera.apply(enemy.rect))
@@ -128,3 +198,20 @@ class Level:
 
   def stop(self):
     self.running = False
+
+  def create_decor_sprite(self, decor_type, pos):
+    image = pygame.image.load(DECOR_DEFINITIONS[decor_type]["path"]).convert_alpha()
+    # Apply scale
+    scale = DECOR_DEFINITIONS[decor_type]["scale"]
+    image = pygame.transform.scale_by(image, scale)
+
+    # Apply optional rotation
+    rotation = DECOR_DEFINITIONS[decor_type].get("rotation", 0)
+    if rotation:
+      image = pygame.transform.rotate(image, rotation)
+
+    # Create sprite
+    sprite = pygame.sprite.Sprite()
+    sprite.image = image
+    sprite.rect = sprite.image.get_rect(topleft=pos)
+    return sprite

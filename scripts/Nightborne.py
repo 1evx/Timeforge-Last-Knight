@@ -83,7 +83,6 @@ class Nightborne(pygame.sprite.Sprite):
         if (not self.attack_has_hit and self.get_attack_hitbox().colliderect(self.player.hitbox)):
           self.player.take_damage(self.attack_damage)
           self.attack_has_hit = True
-
       return
 
     if distance <= self.attack_range and now - self.last_attack_time >= self.attack_cooldown:

@@ -27,7 +27,7 @@ class Valk(pygame.sprite.Sprite):
     self.hitbox.centerx += 100 # Adjust the image
 
     self.alive = True
-    self.health = 30
+    self.health = 6
     self.invincibility_time = 4000  # ms
 
     self.knockback_velocity = 20
@@ -88,7 +88,6 @@ class Valk(pygame.sprite.Sprite):
 
     if not self.alive or self.state == "death":
       self.animate()
-      self.apply_gravity()
       return
 
     if self.state == "hurt":
@@ -187,11 +186,21 @@ class Valk(pygame.sprite.Sprite):
       self.state = "idle"
 
 
-  def apply_gravity(self):
+  def apply_gravity(self, platforms):
     self.velocity_y += Settings.GRAVITY
     self.rect.y += self.velocity_y
 
-    # Player Y Postion Constraints
+    self.on_ground = False
+
+    hits = pygame.sprite.spritecollide(self, platforms, False)
+    for platform in hits:
+      # Only snap if falling downward
+      if self.velocity_y > 0 and self.rect.bottom <= platform.rect.bottom:
+        self.rect.bottom = platform.rect.top
+        self.velocity_y = 0
+        self.on_ground = True
+
+    # Optional: still keep a floor limit if you want
     if self.rect.bottom >= Settings.SCREEN_HEIGHT - 45:
       self.rect.bottom = Settings.SCREEN_HEIGHT - 45
       self.velocity_y = 0
@@ -279,10 +288,10 @@ class Valk(pygame.sprite.Sprite):
       self.image = pygame.transform.flip(self.image, True, False)
 
 
-  def update(self, keys):
+  def update(self, keys, platforms):
     self.hitbox.center = self.rect.center
     self.handle_input(keys)
-    self.apply_gravity()      
+    self.apply_gravity(platforms)
     self.animate()
 
 
