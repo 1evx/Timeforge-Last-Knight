@@ -4,7 +4,7 @@ import pygame
 from scripts.Settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from scripts.Valk import Valk
 from scripts.Background import ParallaxBackground
-from scripts.utils import load_tileset, slice_tileset, generate_tile_row
+from scripts.utils import load_tileset, slice_tileset
 from scripts.camera import Camera
 from scripts.Skeleton import Skeleton
 from scripts.Slime import Slime
@@ -16,59 +16,7 @@ from scripts.Shop import Shop
 from scripts.Platform import Platform
 from scripts.Projectile import Projectile
 from scripts.combat_manager import CombatManager
-
-DECOR_DEFINITIONS = {
-  "Lamp": {
-    "path": "assets/decorations/lamp.png",
-    "scale": 2.5
-  },
-  "Rock2": {
-    "path": "assets/decorations/rock_2.png",
-    "scale": 2.2
-  },
-  "Wall": {
-    "path": "assets/decorations/wall_1.png",
-    "scale": 1.3
-  },
-  "Fireplace": {
-    "path": "assets/decorations/fireplace.png",
-    "scale": 1
-  },
-  "Sign": {
-    "path": "assets/decorations/sign.png",
-    "scale": 2.2
-  },
-  "Fence1": {
-    "path": "assets/decorations/fence_1.png",
-    "scale": 2.5
-  },
-  "Fence2": {
-    "path": "assets/decorations/fence_2.png",
-    "scale": 2.5
-  },
-  "Barricade": {
-    "path": "assets/decorations/barricade_1.png",
-    "scale": 2,
-  },
-  "Vase_1": {
-    "path": "assets/decorations/vase_1.png",
-    "scale": 2,
-  },
-  "Cart": {
-    "path": "assets/decorations/cart_1.png",
-    "scale": 2.1,
-    "rotation": -15
-  },
-  "FallenWhiteVanguard": {
-    "path": "assets/sprites/WhiteVanguard/death/fall_back_5.png",
-    "scale": 3
-  },
-  "FallenSkeleton": {
-    "path": "assets/sprites/WhiteVanguard/death/fall_back_5.png",
-    "scale": 3
-  },
-  # 'Shop' stays handled separately since it's a class.
-}
+from assets.decorations.deco import DECOR_DEFINITIONS
 
 class Level:
   def __init__(self, screen, level_data):
@@ -80,6 +28,8 @@ class Level:
     self.tile_size = 48
     self.level_width = level_data["level_width"]
     self.tiles_per_row = level_data["tiles_per_row"]
+    self.level_data = level_data
+    self.has_finished = False
 
     # Camera
     self.camera = Camera(SCREEN_WIDTH, self.level_width)
@@ -107,7 +57,6 @@ class Level:
     for obj in level_data["decor"]:
       decor_type = obj["type"]
       pos = obj["pos"]
-
       if decor_type == "Shop":
         shop = Shop(*pos)
         self.decor_group.add(shop)
@@ -194,10 +143,21 @@ class Level:
 
       self.screen.blit(self.player.image, self.camera.apply(self.player.rect))
 
+      if self.check_level_complete():
+        self.has_finished = True
+        self.running = False
+
       pygame.display.flip()
 
   def stop(self):
     self.running = False
+
+  def check_level_complete(self):
+    # Replace with your own condition
+    # Example: player reaches right edge of map
+    if self.player.rect.right >= self.level_width:
+      return True
+    return False
 
   def create_decor_sprite(self, decor_type, pos):
     image = pygame.image.load(DECOR_DEFINITIONS[decor_type]["path"]).convert_alpha()
@@ -209,6 +169,11 @@ class Level:
     rotation = DECOR_DEFINITIONS[decor_type].get("rotation", 0)
     if rotation:
       image = pygame.transform.rotate(image, rotation)
+
+    # Optional horizontal flip
+    direction = DECOR_DEFINITIONS[decor_type].get("direction", 1)
+    if direction == -1:
+      image = pygame.transform.flip(image, True, False)
 
     # Create sprite
     sprite = pygame.sprite.Sprite()
