@@ -251,6 +251,7 @@ class Valk(pygame.sprite.Sprite):
           self.state = "idle"
           self.frame_index = 0
           self.is_attacking = False
+          self.is_dashing = False
           self.attack_stage = 0
           if self.knockback_timer > 0:
               self.rect.x += -self.facing * self.knockback_velocity

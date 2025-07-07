@@ -13,6 +13,7 @@ from scripts.Fireborne import Fireborne
 from scripts.SkeletonArcher import SkeletonArcher
 from scripts.Necromancer import Necromancer
 from scripts.Shop import Shop
+from scripts.PracticeTarget import PracticeTarget
 from scripts.Platform import Platform
 from scripts.Projectile import Projectile
 from scripts.combat_manager import CombatManager
@@ -58,7 +59,7 @@ class Level:
       decor_type = obj["type"]
       pos = obj["pos"]
       if decor_type == "Shop":
-        shop = Shop(*pos)
+        shop = Shop(*pos)        
         self.decor_group.add(shop)
       else:
         sprite = self.create_decor_sprite(decor_type, pos)
@@ -89,6 +90,8 @@ class Level:
         enemy = SkeletonArcher(x, y, self.player, self.projectile_group)
       elif enemy_type == "Necromancer":
         enemy = Necromancer(x, y, self.player, self.projectile_group)
+      elif enemy_type == "PracticeTarget":
+        enemy = PracticeTarget(x, y)
       else:
         continue
 
@@ -139,7 +142,9 @@ class Level:
         self.screen.blit(tile.image, self.camera.apply(tile.rect))
 
       for enemy in self.enemy_group:
-        self.screen.blit(enemy.image, self.camera.apply(enemy.rect))
+        screen_rect = self.camera.apply(enemy.rect)
+        self.screen.blit(enemy.image, screen_rect)
+        enemy.draw_health_bar(self.screen, screen_rect)
 
       self.screen.blit(self.player.image, self.camera.apply(self.player.rect))
 
@@ -153,14 +158,14 @@ class Level:
     self.running = False
 
   def check_level_complete(self):
-    # Replace with your own condition
-    # Example: player reaches right edge of map
-    if self.player.rect.right >= self.level_width:
+    # When player reaches right edge of map
+    if self.player.rect.right >= self.level_width + 130:
       return True
     return False
 
   def create_decor_sprite(self, decor_type, pos):
     image = pygame.image.load(DECOR_DEFINITIONS[decor_type]["path"]).convert_alpha()
+
     # Apply scale
     scale = DECOR_DEFINITIONS[decor_type]["scale"]
     image = pygame.transform.scale_by(image, scale)
@@ -175,7 +180,6 @@ class Level:
     if direction == -1:
       image = pygame.transform.flip(image, True, False)
 
-    # Create sprite
     sprite = pygame.sprite.Sprite()
     sprite.image = image
     sprite.rect = sprite.image.get_rect(topleft=pos)
