@@ -21,6 +21,10 @@ class Shop(pygame.sprite.Sprite):
     ]
     self.selected_index = 0
 
+    self.interaction_radius = 100
+    self.show_prompt = False
+    self.prompt_font = pygame.font.SysFont(None, 28)
+
     self.font = pygame.font.SysFont(None, 32)
 
   def update(self):
@@ -28,6 +32,21 @@ class Shop(pygame.sprite.Sprite):
     if self.frame_index >= len(self.animations):
       self.frame_index = 0
     self.image = self.animations[int(self.frame_index)]
+
+  def check_interaction(self, player):
+    distance = self.rect.centerx - player.rect.centerx
+    if abs(distance) <= self.interaction_radius:
+      self.show_prompt = True
+      return True
+    else:
+      self.show_prompt = False
+      return False
+
+  def draw_prompt(self, screen):
+    if self.show_prompt:
+      text = self.prompt_font.render("Press E to interact", True, (255, 255, 255))
+      text_rect = text.get_rect(center=(self.rect.centerx, self.rect.top - 20))
+      screen.blit(text, text_rect)
 
   def buy(self, player):
     """Try to buy the currently selected item"""

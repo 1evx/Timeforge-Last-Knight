@@ -29,6 +29,7 @@ def load_frames(sheet, row, num_frames, frame_width, frame_height, scale=1):
     frames.append(frame)
   return frames
 
+
 def load_tileset(tileset_image, tile_width, tile_height, scale=1):
   """Slice a tileset image into individual tile Surfaces.
 
@@ -82,6 +83,7 @@ def slice_tileset(image_path, tile_width, tile_height, scale=1):
 
   return tile_list
 
+
 def generate_tile_row(start_x, y, tile_indices, tile_width, count):
   """
   Auto-generate a repeating row of tiles.
@@ -98,3 +100,35 @@ def generate_tile_row(start_x, y, tile_indices, tile_width, count):
     x = start_x + i * tile_width
     tiles.append({"pos": [x, y], "tile_index": index})
   return tiles
+
+
+def fade(screen, fade_in=True, speed=5):
+  fade_surface = pygame.Surface(screen.get_size()).convert_alpha()
+  fade_surface.fill((0, 0, 0))
+
+  clock = pygame.time.Clock()
+  alpha = 255 if fade_in else 0
+  done = False
+
+  while not done:
+    for event in pygame.event.get():
+      if event.type == pygame.QUIT:
+        pygame.quit()
+        exit()
+
+    if fade_in:
+      alpha -= speed
+      if alpha <= 0:
+        done = True
+        alpha = 0
+    else:
+      alpha += speed
+      if alpha >= 255:
+        done = True
+        alpha = 255
+
+    fade_surface.set_alpha(alpha)
+    screen.fill((0, 0, 0))  # Or draw current frame behind fade
+    screen.blit(fade_surface, (0, 0))
+    pygame.display.flip()
+    clock.tick(60)

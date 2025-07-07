@@ -31,6 +31,10 @@ DECOR_DEFINITIONS = {
     "path": "assets/decorations/barricade_1.png",
     "scale": 2,
   },
+  "Vase_2": {
+    "path": "assets/decorations/vase_2.png",
+    "scale": 2,
+  },
   "Vase_1": {
     "path": "assets/decorations/vase_1.png",
     "scale": 2,
@@ -42,7 +46,8 @@ DECOR_DEFINITIONS = {
   },
   "FallenWhiteVanguard": {
     "path": "assets/sprites/WhiteVanguard/death/fall_back_5.png",
-    "scale": 3
+    "scale": 3,
+    "direction": -1
   },
   "FallenSkeleton1": {
     "path": "assets/decorations/corpse_1.png",
@@ -73,5 +78,18 @@ DECOR_DEFINITIONS = {
     "path": "assets/decorations/rock_2.png",
     "scale": 2,
   },
-  # 'Shop' stays handled separately since it's a class.
+  "Tableset_1": {
+    "path": "assets/decorations/tableset_1.png",
+    "scale": 2,
+  },
+  "Booth_1": {
+    "path": "assets/decorations/booth_1.png",
+    "scale": 2,
+  },
+  "Latern_1": {
+    "path": "assets/decorations/latern_1.png",
+    "scale": 2,
+  },
+  # 'Shop' handled separately since it's a class.
+  # 'PracticeTarget' handled separately since it's a class.
 }

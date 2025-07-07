@@ -17,7 +17,7 @@ class Necromancer(pygame.sprite.Sprite):
     }
 
     # Core stats
-    self.health = 2
+    self.health = 4
     self.alive = True
     self.state = "idle"
     self.frame_index = 0
@@ -192,3 +192,21 @@ class Necromancer(pygame.sprite.Sprite):
     self.alive = False
     self.state = "death"
     self.frame_index = 0
+
+
+  def draw_health_bar(self, surface, screen_rect):
+    if self.alive:
+      bar_width = 40
+      bar_height = 5
+      bar_x = screen_rect.centerx - bar_width // 2
+      bar_y = screen_rect.top + 60  # above the image
+
+      ratio = max(self.health / 4, 0)
+
+      bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
+      pygame.draw.rect(surface, (60, 60, 60), bg_rect)
+
+      hp_rect = pygame.Rect(bar_x, bar_y, int(bar_width * ratio), bar_height)
+      pygame.draw.rect(surface, (255, 0, 0), hp_rect)
+
+      pygame.draw.rect(surface, (0, 0, 0), bg_rect, 1)
