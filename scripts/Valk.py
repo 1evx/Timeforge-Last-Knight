@@ -27,7 +27,7 @@ class Valk(pygame.sprite.Sprite):
     self.hitbox.centerx += 100 # Adjust the image
 
     self.alive = True
-    self.health = 6
+    self.health = 5
     self.invincibility_time = 4000  # ms
 
     self.knockback_velocity = 20
@@ -248,14 +248,14 @@ class Valk(pygame.sprite.Sprite):
     # HURT
     if self.state == "hurt":
       if self.frame_index >= len(frames):
-          self.state = "idle"
-          self.frame_index = 0
-          self.is_attacking = False
-          self.is_dashing = False
-          self.attack_stage = 0
-          if self.knockback_timer > 0:
-              self.rect.x += -self.facing * self.knockback_velocity
-              self.knockback_timer -= 10
+        self.state = "idle"
+        self.frame_index = 0
+        self.is_attacking = False
+        self.is_dashing = False
+        self.attack_stage = 0
+        if self.knockback_timer > 0:
+          self.rect.x += -self.facing * self.knockback_velocity
+          self.knockback_timer -= 10
 
     # ---- HANDLE NORMAL STATE TRANSITIONS ----
     elif self.frame_index >= len(frames):
@@ -276,7 +276,6 @@ class Valk(pygame.sprite.Sprite):
         self.is_attacking = False
         self.attack_stage = 0
         self.state = "idle"
-
       elif self.state == "dash_attack":
         self.is_dashing = False
         self.is_attacking = False
@@ -402,3 +401,42 @@ class Valk(pygame.sprite.Sprite):
     self.alive = False
     self.state = "death"
     self.frame_index = 0
+
+  
+  def draw_health_bar(self, surface, screen_rect):
+    if self.alive:
+      bar_width = 40
+      bar_height = 5
+      bar_x = screen_rect.centerx - bar_width // 2
+      bar_y = screen_rect.top  # above the image
+
+      ratio = max(self.health / 5, 0)
+
+      bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
+      pygame.draw.rect(surface, (60, 60, 60), bg_rect)
+
+      hp_rect = pygame.Rect(bar_x, bar_y, int(bar_width * ratio), bar_height)
+      pygame.draw.rect(surface, (255, 0, 0), hp_rect)
+
+      pygame.draw.rect(surface, (0, 0, 0), bg_rect, 1)
+
+
+  def draw_hud_health_bar(self, surface):
+    # Fixed position in top left
+    bar_width = 200
+    bar_height = 20
+    bar_x = 20
+    bar_y = 20
+
+    ratio = max(self.health / 5, 0)
+
+    # Background
+    bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
+    pygame.draw.rect(surface, (60, 60, 60), bg_rect)
+
+    # Health amount
+    hp_rect = pygame.Rect(bar_x, bar_y, int(bar_width * ratio), bar_height)
+    pygame.draw.rect(surface, (255, 0, 0), hp_rect)
+
+    # Optional border
+    pygame.draw.rect(surface, (0, 0, 0), bg_rect, 2)

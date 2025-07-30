@@ -40,6 +40,6 @@ crystal_cave_data = {
     {"type": "Nightborne", "pos": [3900, SCREEN_HEIGHT - 300]},
     {"type": "Fireborne", "pos": [2000, SCREEN_HEIGHT - 370]},
     # {"type": "SkeletonArcher", "pos": [1900, SCREEN_HEIGHT - 305]},
-    {"type": "Necromancer", "pos": [1000, SCREEN_HEIGHT - 230]}
+    {"type": "Necromancer", "pos": [1000, SCREEN_HEIGHT - 272]}
   ]
 }

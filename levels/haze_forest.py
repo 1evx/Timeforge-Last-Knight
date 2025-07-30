@@ -34,8 +34,8 @@ haze_forest_data = {
     {"pos": [3400, 670], "tile_index": 2},
   ],
   "enemies": [
+    {"type": "Necromancer", "pos": [900, SCREEN_HEIGHT - 272]},
     {"type": "Skeleton", "pos": [1900, SCREEN_HEIGHT - 185]},
-    {"type": "SkeletonArcher", "pos": [1900, SCREEN_HEIGHT - 305]},
-    {"type": "Necromancer", "pos": [1000, SCREEN_HEIGHT - 230]}
+    {"type": "SkeletonArcher", "pos": [2000, SCREEN_HEIGHT - 305]},
   ]
 }

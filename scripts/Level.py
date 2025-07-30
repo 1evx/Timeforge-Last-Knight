@@ -1,5 +1,3 @@
-# scripts/level.py
-
 import pygame
 from scripts.Settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from scripts.Valk import Valk
@@ -64,7 +62,6 @@ class Level:
       else:
         sprite = self.create_decor_sprite(decor_type, pos)
         self.decor_group.add(sprite)
-   
 
     # Player
     self.player = Valk(100, SCREEN_HEIGHT - 200)
@@ -126,9 +123,15 @@ class Level:
 
       # Draw
       self.background.draw(self.screen)
-      self.projectile_group.draw(self.screen)
 
-      # Draw camera debug
+      # *️⃣ Debug and Draw Projectile
+      for projectile in self.projectile_group:
+        screen_rect = self.camera.apply(projectile.rect)
+        self.screen.blit(projectile.image, screen_rect)
+        hitbox_screen_rect = self.camera.apply(projectile.hitbox)
+        pygame.draw.rect(self.screen, (255, 0, 0), hitbox_screen_rect, 1)  # Red border
+
+      # Draw decor
       for deco in self.decor_group:
         self.screen.blit(deco.image, self.camera.apply(deco.rect))
 
@@ -141,12 +144,17 @@ class Level:
       for tile in self.platforms:
         self.screen.blit(tile.image, self.camera.apply(tile.rect))
 
+      # *️⃣ Debug and Draw Enemy Hitbox and Attack Hitbox
       for enemy in self.enemy_group:
         screen_rect = self.camera.apply(enemy.rect)
         self.screen.blit(enemy.image, screen_rect)
         enemy.draw_health_bar(self.screen, screen_rect)
+        hitbox_screen = self.camera.apply(enemy.hitbox)
+        pygame.draw.rect(self.screen, (0, 255, 0), hitbox_screen, 1)  # Green border
 
       self.screen.blit(self.player.image, self.camera.apply(self.player.rect))
+      self.player.draw_health_bar(self.screen, self.camera.apply(self.player.rect))
+      self.player.draw_hud_health_bar(self.screen)
 
       if self.check_level_complete():
         self.has_finished = True

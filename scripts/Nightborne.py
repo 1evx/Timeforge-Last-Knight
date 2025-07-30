@@ -1,5 +1,5 @@
 import pygame
-from scripts.utils import load_frames
+from scripts.utils import load_and_resize_frames
 
 class Nightborne(pygame.sprite.Sprite):
   def __init__(self, x, y, player):
@@ -9,11 +9,11 @@ class Nightborne(pygame.sprite.Sprite):
     sprite_sheet = pygame.image.load("assets/sprites/nightborne/NightBorne.png").convert_alpha()
 
     self.animations = {
-      "idle": load_frames(sprite_sheet, 0, 9, 80, 80, scale=4),
-      "walk":  load_frames(sprite_sheet, 1, 6, 80, 80, scale=4),
-      "attack":   load_frames(sprite_sheet, 2, 12, 80, 80, scale=4),
-      "hit":   load_frames(sprite_sheet, 3, 5,  80, 80, scale=4),
-      "death":    load_frames(sprite_sheet, 4, 23,  80, 80, scale=4),
+      "idle": load_and_resize_frames(sprite_sheet, 0, 9, 80, 80, scale=4),
+      "walk":  load_and_resize_frames(sprite_sheet, 1, 6, 80, 80, scale=4),
+      "attack":   load_and_resize_frames(sprite_sheet, 2, 12, 80, 80, scale=4),
+      "hit":   load_and_resize_frames(sprite_sheet, 3, 5,  80, 80, scale=4),
+      "death":    load_and_resize_frames(sprite_sheet, 4, 23,  80, 80, scale=4),
     }
 
     # Core stats

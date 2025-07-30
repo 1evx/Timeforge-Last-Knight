@@ -1,5 +1,5 @@
 import pygame
-from scripts.utils import load_frames
+from scripts.utils import load_and_resize_frames
 
 class Skeleton(pygame.sprite.Sprite):
   def __init__(self, x, y, player):
@@ -9,11 +9,11 @@ class Skeleton(pygame.sprite.Sprite):
     sprite_sheet = pygame.image.load("assets/sprites/skeletonL1/Skeleton enemy.png").convert_alpha()
 
     self.animations = {
-      "attack": load_frames(sprite_sheet, 0, 13, 64, 64, scale=2.8),
-      "death":  load_frames(sprite_sheet, 1, 13, 64, 64, scale=2.8),
-      "walk":   load_frames(sprite_sheet, 2, 12, 64, 64, scale=2.8),
-      "idle":   load_frames(sprite_sheet, 3, 4,  64, 64, scale=2.8),
-      "hit":    load_frames(sprite_sheet, 4, 3,  64, 64, scale=2.8),
+      "attack": load_and_resize_frames(sprite_sheet, 0, 13, 64, 64, scale=2.8),
+      "death":  load_and_resize_frames(sprite_sheet, 1, 13, 64, 64, scale=2.8),
+      "walk":   load_and_resize_frames(sprite_sheet, 2, 12, 64, 64, scale=2.8),
+      "idle":   load_and_resize_frames(sprite_sheet, 3, 4,  64, 64, scale=2.8),
+      "hit":    load_and_resize_frames(sprite_sheet, 4, 3,  64, 64, scale=2.8),
     }
 
     # Core stats
@@ -140,6 +140,7 @@ class Skeleton(pygame.sprite.Sprite):
         if now - self.stun_start_time >= self.stun_duration:
           self.hit_anim_playing = False
           self.state = "idle"
+          
     else:
       self.frame_index += self.animation_speed
       if self.frame_index >= len(frames):

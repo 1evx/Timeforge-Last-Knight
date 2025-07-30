@@ -1,6 +1,6 @@
 import pygame
 import math
-from scripts.utils import load_frames
+from scripts.utils import load_and_resize_frames
 from scripts.Projectile import Projectile
 
 class SkeletonArcher(pygame.sprite.Sprite):
@@ -9,11 +9,11 @@ class SkeletonArcher(pygame.sprite.Sprite):
 
     # Sprite sheet config
     self.animations = {
-      "idle": load_frames(pygame.image.load("assets/sprites/skeletonArcher/idle/Idle.png").convert_alpha(), 0, 7, 128, 128, scale=2),
-      "walk":  load_frames(pygame.image.load("assets/sprites/skeletonArcher/walk/Walk.png").convert_alpha(), 0, 8, 128, 128, scale=2),
-      "attack":   load_frames(pygame.image.load("assets/sprites/skeletonArcher/attack/Attack_2.png").convert_alpha(), 0, 4, 128, 128, scale=2),
-      "hit":   load_frames(pygame.image.load("assets/sprites/skeletonArcher/hurt/Hurt.png").convert_alpha(), 0, 2,  128, 128, scale=2),
-      "death":    load_frames(pygame.image.load("assets/sprites/skeletonArcher/death/Dead.png").convert_alpha(), 0, 5,  128, 128, scale=2),
+      "idle": load_and_resize_frames(pygame.image.load("assets/sprites/skeletonArcher/idle/Idle.png").convert_alpha(), 0, 7, 128, 128, scale=2),
+      "walk":  load_and_resize_frames(pygame.image.load("assets/sprites/skeletonArcher/walk/Walk.png").convert_alpha(), 0, 8, 128, 128, scale=2),
+      "attack":   load_and_resize_frames(pygame.image.load("assets/sprites/skeletonArcher/attack/Attack_2.png").convert_alpha(), 0, 4, 128, 128, scale=2),
+      "hit":   load_and_resize_frames(pygame.image.load("assets/sprites/skeletonArcher/hurt/Hurt.png").convert_alpha(), 0, 2,  128, 128, scale=2),
+      "death":    load_and_resize_frames(pygame.image.load("assets/sprites/skeletonArcher/death/Dead.png").convert_alpha(), 0, 5,  128, 128, scale=2),
     }
 
     # Core stats
@@ -120,8 +120,8 @@ class SkeletonArcher(pygame.sprite.Sprite):
     angle = math.atan2(dy, dx)
     speed = 8
 
-    bullet = Projectile(self.rect.centerx, self.rect.centery, angle, speed)
-    self.projectile_group.add(bullet)
+    # bullet = Projectile(self.rect.centerx, self.rect.centery, angle, speed)
+    # self.projectile_group.add(bullet)
 
 
   def animate(self):

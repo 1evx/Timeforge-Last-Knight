@@ -138,6 +138,7 @@ class Slime(pygame.sprite.Sprite):
         if now - self.stun_start_time >= self.stun_duration:
           self.hit_anim_playing = False
           self.state = "idle"
+          
     else:
       self.frame_index += self.animation_speed
       if self.frame_index >= len(frames):

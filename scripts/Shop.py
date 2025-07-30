@@ -1,12 +1,12 @@
 import pygame
-from scripts.utils import load_frames
+from scripts.utils import load_and_resize_frames
 
 class Shop(pygame.sprite.Sprite):
   def __init__(self, x, y):
     super().__init__()
 
     # Load animated frames
-    self.animations = load_frames(pygame.image.load("assets/decorations/shop_anim.png").convert_alpha(), 0, 6, 118, 128, scale=2.8)
+    self.animations = load_and_resize_frames(pygame.image.load("assets/decorations/shop_anim.png").convert_alpha(), 0, 6, 118, 128, scale=2.8)
     self.frame_index = 0
     self.animation_speed = 0.1
 

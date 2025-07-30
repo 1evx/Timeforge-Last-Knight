@@ -15,7 +15,7 @@ def load_sprite_folder(path, scale=3):
   return frames
 
 
-def load_frames(sheet, row, num_frames, frame_width, frame_height, scale=1):
+def load_and_resize_frames(sheet, row, num_frames, frame_width, frame_height, scale=1):
   frames = []
   for i in range(num_frames):
     rect = pygame.Rect(i * frame_width, row * frame_height, frame_width, frame_height)
@@ -25,6 +25,37 @@ def load_frames(sheet, row, num_frames, frame_width, frame_height, scale=1):
       new_width = int(frame_width * scale)
       new_height = int(frame_height * scale)
       frame = pygame.transform.scale(frame, (new_width, new_height))
+
+    frames.append(frame)
+  return frames
+
+
+def load_and_resize_frames(sheet, row, num_frames, frame_width, frame_height, scale=1):
+  frames = []
+  for i in range(num_frames):
+    rect = pygame.Rect(i * frame_width, row * frame_height, frame_width, frame_height)
+    frame = sheet.subsurface(rect)
+
+    if scale != 1:
+      new_width = int(frame_width * scale)
+      new_height = int(frame_height * scale)
+      frame = pygame.transform.scale(frame, (new_width, new_height))
+
+    frames.append(frame)
+  return frames
+
+
+def load_and_resize_frames(sheet, row, count, width, height, scale=1, target_size=None):
+  frames = []
+  for i in range(count):
+    rect = pygame.Rect(i * width, row * height, width, height)
+    frame = sheet.subsurface(rect)
+    frame = pygame.transform.scale_by(frame, scale)
+
+    if target_size:
+      padded = pygame.Surface(target_size, pygame.SRCALPHA)
+      padded.blit(frame, frame.get_rect(center=padded.get_rect().center))
+      frame = padded
 
     frames.append(frame)
   return frames
