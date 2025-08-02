@@ -18,7 +18,7 @@ from scripts.combat_manager import CombatManager
 from assets.decorations.deco import DECOR_DEFINITIONS
 
 class Level:
-  def __init__(self, screen, level_data):
+  def __init__(self, screen, level_data,money):
     self.screen = screen
     self.clock = pygame.time.Clock()
     self.running = True
@@ -57,14 +57,14 @@ class Level:
       decor_type = obj["type"]
       pos = obj["pos"]
       if decor_type == "Shop":
-        shop = Shop(*pos)        
+        shop = Shop(*pos)
         self.decor_group.add(shop)
       else:
         sprite = self.create_decor_sprite(decor_type, pos)
         self.decor_group.add(sprite)
 
     # Player
-    self.player = Valk(100, SCREEN_HEIGHT - 200)
+    self.player = Valk(100, SCREEN_HEIGHT - 200,money)
     self.camera.follow(self.player)
 
     # Enemies
