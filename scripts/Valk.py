@@ -1,9 +1,9 @@
 import pygame
-from scripts import Settings
+from scripts import Settings, Coin
 from scripts.utils import load_sprite_folder
 
 class Valk(pygame.sprite.Sprite):
-  def __init__(self, x, y):
+  def __init__(self, x, y,money):
     super().__init__()
     # Valk Animation Material
     self.run_frames = load_sprite_folder("assets/sprites/valk/run")
@@ -27,7 +27,8 @@ class Valk(pygame.sprite.Sprite):
     self.hitbox.centerx += 100 # Adjust the image
 
     self.alive = True
-    self.health = 5
+    self.health = 10
+    self.money = money
     self.invincibility_time = 4000  # ms
 
     self.knockback_velocity = 20
@@ -45,17 +46,17 @@ class Valk(pygame.sprite.Sprite):
     self.is_attacking = False
     self.attack_stage = 0  # 0 = no attack, 1 = attack1, 2 = attack2
     self.attack_windup_map = {
-      1: 500, # stage 1: 600 ms windup
+      1: 100, # stage 1: 600 ms windup
       2: 0,   # stage 2: no windup
       3: 2500  # heavy attack windup
     }
     self.attack_range_map = {
-      1: 50,  # attack1 range
-      2: 25,  # attack2 range
-      3: 90   # heavy attack range
+      1: 10,  # attack1 range
+      2: 15,  # attack2 range
+      3: 20   # heavy attack range
     }
     self.attack_timer = 0  # when attack1 started
-    self.combo_window = 500  # ms to press again for attack2
+    self.combo_window = 0  # ms to press again for attack2
     self.combo_queued = False
     self.attack_damage = 1
 
@@ -77,6 +78,9 @@ class Valk(pygame.sprite.Sprite):
     self.slide_cooldown = 1000  # milliseconds
     self.last_slide_time = 0
 
+    self.hud_coin = Coin.Coin(0,0)
+    for i in range(len(self.hud_coin.frames)):
+      self.hud_coin.frames[i] = pygame.transform.scale(self.hud_coin.frames[i], (32, 32))
 
   def handle_input(self, keys):
     current_time = pygame.time.get_ticks()
@@ -178,7 +182,7 @@ class Valk(pygame.sprite.Sprite):
       self.facing = 1
       self.state = "run"
       return
-    
+
     # -------------------------------
     # 5. Default: No input
     # -------------------------------
@@ -296,6 +300,8 @@ class Valk(pygame.sprite.Sprite):
 
 
   def attack(self):
+    if not self.alive:
+      return
     current_time = pygame.time.get_ticks()
     self.attack_timer = pygame.time.get_ticks()
     self.attack_damage = 1
@@ -334,7 +340,7 @@ class Valk(pygame.sprite.Sprite):
   def dash_attack(self):
     current_time = pygame.time.get_ticks()
     self.attack_damage = 2
-    
+
     # Block if currently attacking or dashing
     if self.state.startswith("attack") or self.is_dashing:
       return
@@ -370,7 +376,7 @@ class Valk(pygame.sprite.Sprite):
       x = self.hitbox.left - width
 
     return pygame.Rect(x, y, width, height)
-  
+
 
   def take_damage(self, amount):
     self.health -= amount
@@ -402,7 +408,7 @@ class Valk(pygame.sprite.Sprite):
     self.state = "death"
     self.frame_index = 0
 
-  
+
   def draw_health_bar(self, surface, screen_rect):
     if self.alive:
       bar_width = 40
@@ -440,3 +446,18 @@ class Valk(pygame.sprite.Sprite):
 
     # Optional border
     pygame.draw.rect(surface, (0, 0, 0), bg_rect, 2)
+
+  def draw_hud_gold(self,surface):
+    gold_x  = Settings.SCREEN_WIDTH - 140
+    gold_y = 20
+
+    font = pygame.font.Font(None, 36)
+    self.hud_coin.update()
+
+    gold_text = font.render(f"Gold: {self.money}", True, (255, 215, 0))
+
+    coin_x = gold_x - 40
+    text_x = gold_x
+
+    surface.blit(self.hud_coin.image, (coin_x, gold_y))
+    surface.blit(gold_text, (text_x, gold_y))
