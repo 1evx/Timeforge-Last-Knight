@@ -416,7 +416,7 @@ class Valk(pygame.sprite.Sprite):
       bar_x = screen_rect.centerx - bar_width // 2
       bar_y = screen_rect.top  # above the image
 
-      ratio = max(self.health / 5, 0)
+      ratio = max(self.health / 10, 0)
 
       bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
       pygame.draw.rect(surface, (60, 60, 60), bg_rect)
@@ -434,7 +434,7 @@ class Valk(pygame.sprite.Sprite):
     bar_x = 20
     bar_y = 20
 
-    ratio = max(self.health / 5, 0)
+    ratio = max(self.health / 10, 0)
 
     # Background
     bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
