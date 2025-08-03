@@ -1,4 +1,3 @@
-import sys
 import pygame
 from scripts import Settings
 from scripts.Coin import Coin
@@ -14,6 +13,9 @@ from scripts.Nightborne import Nightborne
 from scripts.Fireborne import Fireborne
 from scripts.SkeletonArcher import SkeletonArcher
 from scripts.Necromancer import Necromancer
+from scripts.Goblin import Goblin
+from scripts.Mushroom import Mushroom
+from scripts.ShieldSkeleton import ShieldSkeleton
 from scripts.Shop import Shop
 from scripts.PracticeTarget import PracticeTarget
 from scripts.Platform import Platform
@@ -70,7 +72,13 @@ class Level:
         self.enemy_group = pygame.sprite.Group()
         self.projectile_group = pygame.sprite.Group()
         self.coin_group = pygame.sprite.Group()
+        self._initialize_enemies()
 
+        self.combat_manager = CombatManager(self.player, self.enemy_group)
+        self.game_over_popup = GameOverPopup(self.screen, Settings)
+
+    def _initialize_enemies(self):
+        """Initialize or reinitialize enemies based on level data."""
         for enemy_info in self.level_data["enemies"]:
             enemy_type = enemy_info["type"]
             x, y = enemy_info["pos"]
@@ -88,12 +96,15 @@ class Level:
                 enemy = Necromancer(x, y, self.player, self.projectile_group, self.coin_group)
             elif enemy_type == "PracticeTarget":
                 enemy = PracticeTarget(x, y)
+            elif enemy_type == "Goblin":
+                enemy = Goblin(x, y, self.player, self.coin_group)
+            elif enemy_type == "Mushroom":
+                enemy = Mushroom(x, y, self.player, self.coin_group)
+            if enemy_type == "ShieldSkeleton":
+                enemy = ShieldSkeleton(x, y, self.player, self.coin_group)
             else:
                 continue
             self.enemy_group.add(enemy)
-
-        self.combat_manager = CombatManager(self.player, self.enemy_group)
-        self.game_over_popup = GameOverPopup(self.screen, Settings)
 
     def run(self):
         while self.running:
@@ -147,7 +158,7 @@ class Level:
                 screen_rect = self.camera.apply(projectile.rect)
                 self.screen.blit(projectile.image, screen_rect)
                 hitbox_screen_rect = self.camera.apply(projectile.hitbox)
-                pygame.draw.rect(self.screen, (255, 0, 0), hitbox_screen_rect, 1)
+                pygame.draw.rect(self.screen, (255, 0, 0), hitbox_screen_rect, 1)  # Debug
 
             for deco in self.decor_group:
                 self.screen.blit(deco.image, self.camera.apply(deco.rect))
@@ -166,7 +177,14 @@ class Level:
                 self.screen.blit(enemy.image, screen_rect)
                 enemy.draw_health_bar(self.screen, screen_rect)
                 hitbox_screen = self.camera.apply(enemy.hitbox)
-                pygame.draw.rect(self.screen, (0, 255, 0), hitbox_screen, 1)
+                pygame.draw.rect(self.screen, (0, 255, 0), hitbox_screen, 1)  # Debug
+
+                # Draw melee hitbox if enemy is attacking
+                if hasattr(enemy, 'get_attack_hitbox'):
+                    attack_hitbox = enemy.get_attack_hitbox()
+                    if attack_hitbox:
+                        attack_screen_rect = self.camera.apply(attack_hitbox)
+                        pygame.draw.rect(self.screen, (255, 0, 0), attack_screen_rect, 1)  # Red for attack hitbox
 
             for coin in self.coin_group:
                 self.screen.blit(coin.image, self.camera.apply(coin.rect))
@@ -193,26 +211,7 @@ class Level:
         self.projectile_group.empty()
         self.coin_group.empty()
 
-        for enemy_info in self.level_data["enemies"]:
-            enemy_type = enemy_info["type"]
-            x, y = enemy_info["pos"]
-            if enemy_type == "Skeleton":
-                enemy = Skeleton(x, y, self.player, self.coin_group)
-            elif enemy_type == "Slime":
-                enemy = Slime(x, y, self.player, self.coin_group)
-            elif enemy_type == "Nightborne":
-                enemy = Nightborne(x, y, self.player, self.coin_group)
-            elif enemy_type == "Fireborne":
-                enemy = Fireborne(x, y, self.player, self.coin_group)
-            elif enemy_type == "SkeletonArcher":
-                enemy = SkeletonArcher(x, y, self.player, self.projectile_group, self.coin_group)
-            elif enemy_type == "Necromancer":
-                enemy = Necromancer(x, y, self.player, self.projectile_group, self.coin_group)
-            elif enemy_type == "PracticeTarget":
-                enemy = PracticeTarget(x, y)
-            else:
-                continue
-            self.enemy_group.add(enemy)
+        self._initialize_enemies()  # Reuse enemy initialization
 
         self.state = "playing"
         self.game_over_popup.active = False

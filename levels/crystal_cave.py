@@ -35,11 +35,11 @@ crystal_cave_data = {
     {"pos": [3400, 670], "tile_index": 2},
   ],
   "enemies": [
-    # {"type": "Slime", "pos": [5800, SCREEN_HEIGHT - 120]},
-    # {"type": "Skeleton", "pos": [1900, SCREEN_HEIGHT - 185]},
-    {"type": "Nightborne", "pos": [3900, SCREEN_HEIGHT - 300]},
-    {"type": "Fireborne", "pos": [2000, SCREEN_HEIGHT - 370]},
-    # {"type": "SkeletonArcher", "pos": [1900, SCREEN_HEIGHT - 305]},
-    {"type": "Necromancer", "pos": [1000, SCREEN_HEIGHT - 272]}
+    {"type": "ShieldSkeleton", "pos": [900, SCREEN_HEIGHT - 250]},
+    {"type": "Goblin", "pos": [1900, SCREEN_HEIGHT - 250]},
+    {"type": "Necromancer", "pos": [2000, SCREEN_HEIGHT - 272]},
+    {"type": "Mushroom", "pos": [3000, SCREEN_HEIGHT - 250]},
+    {"type": "Fireborne", "pos": [7000, SCREEN_HEIGHT - 370]},
+    # {"type": "Nightborne", "pos": [3900, SCREEN_HEIGHT - 300]},
   ]
 }

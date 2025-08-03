@@ -9,6 +9,7 @@ from scripts.Menu import Menu
 from scripts.utils import fade
 
 def main():
+  money = 0
   pygame.init()
   screen = pygame.display.set_mode((Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT))
   pygame.display.set_caption("Timeforge: The Last Knight")
@@ -19,7 +20,6 @@ def main():
     pygame.quit()
     return
 
-  money = 0
   for i, level_data in enumerate(levels):
     fade(screen, fade_in=True, speed=5)
     level = Level(screen, level_data,money)

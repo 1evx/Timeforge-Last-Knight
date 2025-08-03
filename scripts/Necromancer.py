@@ -1,8 +1,6 @@
 import random
-
 import pygame
 import math
-
 from scripts.Coin import Coin
 from scripts.utils import load_and_resize_frames
 from scripts.Projectile import Projectile
