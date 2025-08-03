@@ -1,13 +1,18 @@
+import random
+
 import pygame
 import math
+
+from scripts.Coin import Coin
 from scripts.utils import load_and_resize_frames
 from scripts.Projectile import Projectile
 
 class Necromancer(pygame.sprite.Sprite):
-  def __init__(self, x, y, player, projectile_group):
+  def __init__(self, x, y, player, projectile_group,coin_group):
     super().__init__()
 
     # Sprite sheet config
+    self.coin_group = coin_group
     self.animations = {
       "attack": load_and_resize_frames(pygame.image.load("assets/sprites/necromancer/attack/spr_NecromancerAttackWithoutEffect_strip47.png").convert_alpha(), 0, 47, 128, 128, scale=2.8, target_size=(128*2.8, 128*2.8)),
       "death":  load_and_resize_frames(pygame.image.load("assets/sprites/necromancer/death/spr_NecromancerDeath_strip52.png").convert_alpha(), 0, 52, 96, 96, scale=2.8, target_size=(128*2.8, 128*2.8)),
@@ -199,6 +204,13 @@ class Necromancer(pygame.sprite.Sprite):
     if self.current_projectile:
       self.current_projectile.kill()
       self.current_projectile = None
+
+    num_coins = 3
+    for i in range(num_coins):
+      offset_x = random.randint(-200, 150)
+      offset_y = random.randint(-5, 5)
+      coin = Coin(self.rect.centerx + offset_x, self.rect.centery + offset_y)
+      self.coin_group.add(coin)
 
   def draw_health_bar(self, surface, screen_rect):
     if self.alive:

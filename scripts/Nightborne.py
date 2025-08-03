@@ -1,9 +1,14 @@
+import random
+
 import pygame
+
+from scripts.Coin import Coin
 from scripts.utils import load_and_resize_frames
 
 class Nightborne(pygame.sprite.Sprite):
-  def __init__(self, x, y, player):
+  def __init__(self, x, y, player,coin_group):
     super().__init__()
+    self.coin_group = coin_group
 
     # Sprite sheet config
     sprite_sheet = pygame.image.load("assets/sprites/nightborne/NightBorne.png").convert_alpha()
@@ -177,6 +182,13 @@ class Nightborne(pygame.sprite.Sprite):
     self.alive = False
     self.state = "death"
     self.frame_index = 0
+
+    num_coins = 6
+    for i in range(num_coins):
+      offset_x = random.randint(-200, 150)
+      offset_y = random.randint(-5, 5)
+      coin = Coin(self.rect.centerx + offset_x, self.rect.centery + offset_y)
+      self.coin_group.add(coin)
 
   def draw_health_bar(self, surface, screen_rect):
     if self.alive:

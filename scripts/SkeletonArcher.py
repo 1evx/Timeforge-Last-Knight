@@ -1,11 +1,16 @@
+import random
+
 import pygame
 import math
+
+from scripts.Coin import Coin
 from scripts.utils import load_and_resize_frames
 from scripts.Projectile import Projectile
 
 class SkeletonArcher(pygame.sprite.Sprite):
-  def __init__(self, x, y, player, projectile_group):
+  def __init__(self, x, y, player, projectile_group,coin_group):
     super().__init__()
+    self.coin_group = coin_group
 
     # Sprite sheet config
     self.animations = {
@@ -193,6 +198,12 @@ class SkeletonArcher(pygame.sprite.Sprite):
     self.state = "death"
     self.frame_index = 0
 
+    num_coins = 4
+    for i in range(num_coins):
+      offset_x = random.randint(-200, 150)
+      offset_y = random.randint(-5, 5)
+      coin = Coin(self.rect.centerx + offset_x, self.rect.centery + offset_y)
+      self.coin_group.add(coin)
 
   def draw_health_bar(self, surface, screen_rect):
     if self.alive:

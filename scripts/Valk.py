@@ -1,5 +1,5 @@
 import pygame
-from scripts import Settings
+from scripts import Settings, Coin
 from scripts.utils import load_sprite_folder
 
 class Valk(pygame.sprite.Sprite):
@@ -78,6 +78,9 @@ class Valk(pygame.sprite.Sprite):
     self.slide_cooldown = 1000  # milliseconds
     self.last_slide_time = 0
 
+    self.hud_coin = Coin.Coin(0,0)
+    for i in range(len(self.hud_coin.frames)):
+      self.hud_coin.frames[i] = pygame.transform.scale(self.hud_coin.frames[i], (32, 32))
 
   def handle_input(self, keys):
     current_time = pygame.time.get_ticks()
@@ -443,3 +446,18 @@ class Valk(pygame.sprite.Sprite):
 
     # Optional border
     pygame.draw.rect(surface, (0, 0, 0), bg_rect, 2)
+
+  def draw_hud_gold(self,surface):
+    gold_x  = Settings.SCREEN_WIDTH - 140
+    gold_y = 20
+
+    font = pygame.font.Font(None, 36)
+    self.hud_coin.update()
+
+    gold_text = font.render(f"Gold: {self.money}", True, (255, 215, 0))
+
+    coin_x = gold_x - 40
+    text_x = gold_x
+
+    surface.blit(self.hud_coin.image, (coin_x, gold_y))
+    surface.blit(gold_text, (text_x, gold_y))

@@ -1,4 +1,6 @@
 import pygame
+
+from scripts.Coin import Coin
 from scripts.Settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from scripts.Valk import Valk
 from scripts.Background import ParallaxBackground
@@ -17,178 +19,197 @@ from scripts.Projectile import Projectile
 from scripts.combat_manager import CombatManager
 from assets.decorations.deco import DECOR_DEFINITIONS
 
+
 class Level:
-  def __init__(self, screen, level_data,money):
-    self.screen = screen
-    self.clock = pygame.time.Clock()
-    self.running = True
+    def __init__(self, screen, level_data, money):
+        self.screen = screen
+        self.clock = pygame.time.Clock()
+        self.running = True
 
-    # Load level data
-    self.tile_size = 48
-    self.level_width = level_data["level_width"]
-    self.tiles_per_row = level_data["tiles_per_row"]
-    self.level_data = level_data
-    self.has_finished = False
+        # Load level data
+        self.tile_size = 48
+        self.level_width = level_data["level_width"]
+        self.tiles_per_row = level_data["tiles_per_row"]
+        self.level_data = level_data
+        self.has_finished = False
 
-    # Camera
-    self.camera = Camera(SCREEN_WIDTH, self.level_width)
+        # Camera
+        self.camera = Camera(SCREEN_WIDTH, self.level_width)
 
-    # Background
-    self.background = ParallaxBackground(level_data["backgrounds"], SCREEN_WIDTH, SCREEN_HEIGHT)
+        # Background
+        self.background = ParallaxBackground(level_data["backgrounds"], SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    # Ground tiles
-    tileset_image = pygame.image.load(level_data["tileset"]).convert_alpha()
-    self.tileset_tiles = load_tileset(tileset_image, 24, 24, scale=2)
+        # Ground tiles
+        tileset_image = pygame.image.load(level_data["tileset"]).convert_alpha()
+        self.tileset_tiles = load_tileset(tileset_image, 24, 24, scale=2)
 
-    self.platforms = pygame.sprite.Group()
-    for tile_data in level_data["tiles"]:
-      x, y = tile_data["pos"]
-      index = tile_data["tile_index"]
-      tile_image = self.tileset_tiles[index]
-      tile = Platform(x, y, tile_image)
-      self.platforms.add(tile)
+        self.platforms = pygame.sprite.Group()
+        for tile_data in level_data["tiles"]:
+            x, y = tile_data["pos"]
+            index = tile_data["tile_index"]
+            tile_image = self.tileset_tiles[index]
+            tile = Platform(x, y, tile_image)
+            self.platforms.add(tile)
 
-    self.ground_tile = slice_tileset(level_data["tileset"], self.tile_size, self.tile_size, scale=2)
+        self.ground_tile = slice_tileset(level_data["tileset"], self.tile_size, self.tile_size, scale=2)
 
-    # Deco
-    self.decor_group = pygame.sprite.Group()
+        # Deco
+        self.decor_group = pygame.sprite.Group()
 
-    for obj in level_data["decor"]:
-      decor_type = obj["type"]
-      pos = obj["pos"]
-      if decor_type == "Shop":
-        shop = Shop(*pos)
-        self.decor_group.add(shop)
-      else:
-        sprite = self.create_decor_sprite(decor_type, pos)
-        self.decor_group.add(sprite)
+        for obj in level_data["decor"]:
+            decor_type = obj["type"]
+            pos = obj["pos"]
+            if decor_type == "Shop":
+                shop = Shop(*pos)
+                self.decor_group.add(shop)
+            else:
+                sprite = self.create_decor_sprite(decor_type, pos)
+                self.decor_group.add(sprite)
 
-    # Player
-    self.player = Valk(100, SCREEN_HEIGHT - 200,money)
-    self.camera.follow(self.player)
+        # Player
+        self.player = Valk(100, SCREEN_HEIGHT - 200, money)
+        self.camera.follow(self.player)
 
-    # Enemies
-    self.enemy_group = pygame.sprite.Group()
-    self.projectile_group = pygame.sprite.Group()
+        # Coins
+        self.coin_group = pygame.sprite.Group()
 
-    for enemy_info in level_data["enemies"]:
-      enemy_type = enemy_info["type"]
-      x, y = enemy_info["pos"]
+        # Enemies
+        self.enemy_group = pygame.sprite.Group()
+        self.projectile_group = pygame.sprite.Group()
 
-      if enemy_type == "Skeleton":
-        enemy = Skeleton(x, y, self.player)
-      elif enemy_type == "Slime":
-        enemy = Slime(x, y, self.player)
-      elif enemy_type == "Nightborne":
-        enemy = Nightborne(x, y, self.player)
-      elif enemy_type == "Fireborne":
-        enemy = Fireborne(x, y, self.player)
-      elif enemy_type == "SkeletonArcher":
-        enemy = SkeletonArcher(x, y, self.player, self.projectile_group)
-      elif enemy_type == "Necromancer":
-        enemy = Necromancer(x, y, self.player, self.projectile_group)
-      elif enemy_type == "PracticeTarget":
-        enemy = PracticeTarget(x, y)
-      else:
-        continue
+        for enemy_info in level_data["enemies"]:
+            enemy_type = enemy_info["type"]
+            x, y = enemy_info["pos"]
 
-      self.enemy_group.add(enemy)
+            if enemy_type == "Skeleton":
+                enemy = Skeleton(x, y, self.player, self.coin_group)
+            elif enemy_type == "Slime":
+                enemy = Slime(x, y, self.player, self.coin_group)
+            elif enemy_type == "Nightborne":
+                enemy = Nightborne(x, y, self.player, self.coin_group)
+            elif enemy_type == "Fireborne":
+                enemy = Fireborne(x, y, self.player, self.coin_group)
+            elif enemy_type == "SkeletonArcher":
+                enemy = SkeletonArcher(x, y, self.player, self.projectile_group, self.coin_group)
+            elif enemy_type == "Necromancer":
+                enemy = Necromancer(x, y, self.player, self.projectile_group, self.coin_group)
+            elif enemy_type == "PracticeTarget":
+                enemy = PracticeTarget(x, y)
+            else:
+                continue
 
-    self.combat_manager = CombatManager(self.player, self.enemy_group)
+            self.enemy_group.add(enemy)
 
-  def run(self):
-    while self.running:
-      self.clock.tick(FPS)
-      keys = pygame.key.get_pressed()
+        self.combat_manager = CombatManager(self.player, self.enemy_group)
 
-      for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-          self.running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-          if event.button == 1:
-            self.player.attack()
-          elif event.button == 3:
-            self.player.dash_attack()
+    def run(self):
+        while self.running:
+            self.clock.tick(FPS)
+            keys = pygame.key.get_pressed()
 
-      # Combat checks
-      self.combat_manager.check_collisions()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        self.player.attack()
+                    elif event.button == 3:
+                        self.player.dash_attack()
 
-      # Update
-      self.player.update(keys, self.platforms)
-      self.decor_group.update()
-      self.enemy_group.update()
-      self.projectile_group.update()
-      self.camera.update()
-      self.background.update(self.camera.get_offset())
+            # Combat checks
+            self.combat_manager.check_collisions()
 
-      # Draw
-      self.background.draw(self.screen)
+            # Update
+            self.player.update(keys, self.platforms)
+            self.decor_group.update()
+            self.enemy_group.update()
+            self.projectile_group.update()
+            self.camera.update()
+            self.background.update(self.camera.get_offset())
 
-      # *️⃣ Debug and Draw Projectile
-      for projectile in self.projectile_group:
-        screen_rect = self.camera.apply(projectile.rect)
-        self.screen.blit(projectile.image, screen_rect)
-        hitbox_screen_rect = self.camera.apply(projectile.hitbox)
-        pygame.draw.rect(self.screen, (255, 0, 0), hitbox_screen_rect, 1)  # Red border
+            # Draw
+            self.background.draw(self.screen)
 
-      # Draw decor
-      for deco in self.decor_group:
-        self.screen.blit(deco.image, self.camera.apply(deco.rect))
+            # *️⃣ Debug and Draw Projectile
+            for projectile in self.projectile_group:
+                screen_rect = self.camera.apply(projectile.rect)
+                self.screen.blit(projectile.image, screen_rect)
+                hitbox_screen_rect = self.camera.apply(projectile.hitbox)
+                pygame.draw.rect(self.screen, (255, 0, 0), hitbox_screen_rect, 1)  # Red border
 
-      for i, x in enumerate(range(0, self.level_width, self.tile_size * 2)):
-        screen_x = x - self.camera.get_offset()
-        if -self.tile_size * 2 <= screen_x <= SCREEN_WIDTH:
-          tile = self.ground_tile[3]
-          self.screen.blit(tile, (screen_x, SCREEN_HEIGHT - 50))
+            # Draw decor
+            for deco in self.decor_group:
+                self.screen.blit(deco.image, self.camera.apply(deco.rect))
 
-      for tile in self.platforms:
-        self.screen.blit(tile.image, self.camera.apply(tile.rect))
+            for i, x in enumerate(range(0, self.level_width, self.tile_size * 2)):
+                screen_x = x - self.camera.get_offset()
+                if -self.tile_size * 2 <= screen_x <= SCREEN_WIDTH:
+                    tile = self.ground_tile[3]
+                    self.screen.blit(tile, (screen_x, SCREEN_HEIGHT - 50))
 
-      # *️⃣ Debug and Draw Enemy Hitbox and Attack Hitbox
-      for enemy in self.enemy_group:
-        screen_rect = self.camera.apply(enemy.rect)
-        self.screen.blit(enemy.image, screen_rect)
-        enemy.draw_health_bar(self.screen, screen_rect)
-        hitbox_screen = self.camera.apply(enemy.hitbox)
-        pygame.draw.rect(self.screen, (0, 255, 0), hitbox_screen, 1)  # Green border
+            for tile in self.platforms:
+                self.screen.blit(tile.image, self.camera.apply(tile.rect))
 
-      self.screen.blit(self.player.image, self.camera.apply(self.player.rect))
-      self.player.draw_health_bar(self.screen, self.camera.apply(self.player.rect))
-      self.player.draw_hud_health_bar(self.screen)
+            # *️⃣ Debug and Draw Enemy Hitbox and Attack Hitbox
+            for enemy in self.enemy_group:
+                screen_rect = self.camera.apply(enemy.rect)
+                self.screen.blit(enemy.image, screen_rect)
+                enemy.draw_health_bar(self.screen, screen_rect)
+                hitbox_screen = self.camera.apply(enemy.hitbox)
+                pygame.draw.rect(self.screen, (0, 255, 0), hitbox_screen, 1)  # Green border
 
-      if self.check_level_complete():
-        self.has_finished = True
+            for coin in self.coin_group:
+                self.screen.blit(coin.image, self.camera.apply(coin.rect))
+            self.coin_group.update()
+            self.check_coin_collection()
+
+            self.screen.blit(self.player.image, self.camera.apply(self.player.rect))
+            self.player.draw_health_bar(self.screen, self.camera.apply(self.player.rect))
+            self.player.draw_hud_health_bar(self.screen)
+            self.player.draw_hud_gold(self.screen)
+
+            if self.check_level_complete():
+                self.has_finished = True
+                self.running = False
+
+            pygame.display.flip()
+
+    def stop(self):
         self.running = False
 
-      pygame.display.flip()
+    def check_level_complete(self):
+        # When player reaches right edge of map
+        if self.player.rect.right >= self.level_width + 130:
+            return True
+        return False
 
-  def stop(self):
-    self.running = False
+    def create_decor_sprite(self, decor_type, pos):
+        image = pygame.image.load(DECOR_DEFINITIONS[decor_type]["path"]).convert_alpha()
 
-  def check_level_complete(self):
-    # When player reaches right edge of map
-    if self.player.rect.right >= self.level_width + 130:
-      return True
-    return False
+        # Apply scale
+        scale = DECOR_DEFINITIONS[decor_type]["scale"]
+        image = pygame.transform.scale_by(image, scale)
 
-  def create_decor_sprite(self, decor_type, pos):
-    image = pygame.image.load(DECOR_DEFINITIONS[decor_type]["path"]).convert_alpha()
+        # Apply optional rotation
+        rotation = DECOR_DEFINITIONS[decor_type].get("rotation", 0)
+        if rotation:
+            image = pygame.transform.rotate(image, rotation)
 
-    # Apply scale
-    scale = DECOR_DEFINITIONS[decor_type]["scale"]
-    image = pygame.transform.scale_by(image, scale)
+        # Optional horizontal flip
+        direction = DECOR_DEFINITIONS[decor_type].get("direction", 1)
+        if direction == -1:
+            image = pygame.transform.flip(image, True, False)
 
-    # Apply optional rotation
-    rotation = DECOR_DEFINITIONS[decor_type].get("rotation", 0)
-    if rotation:
-      image = pygame.transform.rotate(image, rotation)
+        sprite = pygame.sprite.Sprite()
+        sprite.image = image
+        sprite.rect = sprite.image.get_rect(topleft=pos)
+        return sprite
 
-    # Optional horizontal flip
-    direction = DECOR_DEFINITIONS[decor_type].get("direction", 1)
-    if direction == -1:
-      image = pygame.transform.flip(image, True, False)
-
-    sprite = pygame.sprite.Sprite()
-    sprite.image = image
-    sprite.rect = sprite.image.get_rect(topleft=pos)
-    return sprite
+    def check_coin_collection(self):
+        player_center = self.player.rect.center
+        for coin in self.coin_group.copy():
+            if coin.can_be_collected() and coin.rect.collidepoint(player_center):
+                self.player.money += 1
+                coin.kill()
+                # coin_sound = pygame.mixer.Sound("assets/sounds/coin_collect.wav")
+                # coin_sound.play()
