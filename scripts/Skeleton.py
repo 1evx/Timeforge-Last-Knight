@@ -1,12 +1,17 @@
+import random
+
 import pygame
+
+from scripts.Coin import Coin
 from scripts.utils import load_and_resize_frames
 
 class Skeleton(pygame.sprite.Sprite):
-  def __init__(self, x, y, player):
+  def __init__(self, x, y, player,coin_group):
     super().__init__()
 
     # Sprite sheet config
     sprite_sheet = pygame.image.load("assets/sprites/skeletonL1/Skeleton enemy.png").convert_alpha()
+    self.coin_group = coin_group
 
     self.animations = {
       "attack": load_and_resize_frames(sprite_sheet, 0, 13, 64, 64, scale=2.8),
@@ -188,6 +193,12 @@ class Skeleton(pygame.sprite.Sprite):
     self.state = "death"
     self.frame_index = 0
 
+    num_coins = 2
+    for i in range(num_coins):
+      offset_x = random.randint(-200, 150)
+      offset_y = random.randint(-5, 5)
+      coin = Coin(self.rect.centerx + offset_x, self.rect.centery + offset_y)
+      self.coin_group.add(coin)
 
   def draw_health_bar(self, surface, screen_rect):
     if self.alive:
