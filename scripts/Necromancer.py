@@ -29,7 +29,7 @@ class Necromancer(pygame.sprite.Sprite):
     self.animation_speed = 0.15
     self.image = self.animations[self.state][0]
     self.rect = self.image.get_rect(topleft=(x, y))
-    self.hitbox = self.rect.inflate(-200, -200)
+    self.hitbox = self.rect.inflate(-250, -200)
 
     self.direction = 1
     self.speed = 2
@@ -37,7 +37,7 @@ class Necromancer(pygame.sprite.Sprite):
     # Player
     self.player = player
     self.aggro_range = 500
-    self.shoot_range = 1000
+    self.shoot_range = 1200
     self.retreat_range = 200
 
     # Ranged Attack
