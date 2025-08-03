@@ -14,7 +14,7 @@ class GameOverPopup:
   def create_buttons(self):
     button_width, button_height = 200, 50
     screen_center_x = SCREEN_WIDTH // 2
-    screen_center_y = SCREEN_HEIGHT // 2
+    screen_center_y = SCREEN_HEIGHT // 2.5
     restart_rect = pygame.Rect(screen_center_x - button_width // 2, screen_center_y + 50, button_width, button_height)
     self.buttons.append({"text": "Restart", "rect": restart_rect, "action": "restart"})
     quit_rect = pygame.Rect(screen_center_x - button_width // 2, screen_center_y + 120, button_width, button_height)
