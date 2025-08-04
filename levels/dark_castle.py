@@ -4,6 +4,7 @@ dark_castle_data = {
   "level_width": 8000,
   "tiles_per_row": 100,
   "tileset": "assets/tiles/oak_woods_tileset.png",
+  "background_music": "assets/sound effect/onGame.mp3",
   "backgrounds": [
     ("assets/backgrounds/dc_layer_1.png", 0.2),
     ("assets/backgrounds/dc_layer_2.png", 0.5),
