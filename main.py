@@ -13,7 +13,7 @@ def main():
   pygame.init()
   screen = pygame.display.set_mode((Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT))
   pygame.display.set_caption("Timeforge: The Last Knight")
-  levels = [crystal_cave_data, oak_forest_data, haze_forest_data, dark_castle_data]
+  levels = [haze_forest_data,crystal_cave_data, oak_forest_data, dark_castle_data]
 
   menu = Menu(screen)
   if not menu.run():
@@ -25,6 +25,7 @@ def main():
     level = Level(screen, level_data,money)
     level.run()
 
+    money = level.player.money
     if not level.has_finished:
       break
 

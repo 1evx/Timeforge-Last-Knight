@@ -35,6 +35,8 @@ class Level:
         self.state = "playing"
         self.death_timer = 0
         self.death_delay = 2000  # 2 seconds for death animation
+        self.game_over_sound_played = False
+        self.money = money
 
         # Camera and background
         self.camera = Camera(SCREEN_WIDTH, self.level_width)
@@ -64,6 +66,9 @@ class Level:
                 sprite = self.create_decor_sprite(decor_type, pos)
                 self.decor_group.add(sprite)
 
+        # Sound Effects
+        self.background_music = level_data["background_music"]
+
         # Player
         self.player = Valk(100, SCREEN_HEIGHT - 200, money)
         self.camera.follow(self.player)
@@ -76,6 +81,11 @@ class Level:
 
         self.combat_manager = CombatManager(self.player, self.enemy_group)
         self.game_over_popup = GameOverPopup(self.screen, Settings)
+        self.play_music()
+
+    def play_music(self, loop=-1):
+        pygame.mixer.music.load(self.background_music)
+        pygame.mixer.music.play(loops=loop)
 
     def _initialize_enemies(self):
         """Initialize or reinitialize enemies based on level data."""
@@ -100,11 +110,12 @@ class Level:
                 enemy = Goblin(x, y, self.player, self.coin_group)
             elif enemy_type == "Mushroom":
                 enemy = Mushroom(x, y, self.player, self.coin_group)
-            if enemy_type == "ShieldSkeleton":
+            elif enemy_type == "ShieldSkeleton":
                 enemy = ShieldSkeleton(x, y, self.player, self.coin_group)
             else:
                 continue
-            self.enemy_group.add(enemy)
+            if enemy is not None:
+                self.enemy_group.add(enemy)
 
     def run(self):
         while self.running:
@@ -154,14 +165,15 @@ class Level:
             # Draw
             self.background.draw(self.screen)
 
+            for deco in self.decor_group:
+                self.screen.blit(deco.image, self.camera.apply(deco.rect))
+
             for projectile in self.projectile_group:
                 screen_rect = self.camera.apply(projectile.rect)
                 self.screen.blit(projectile.image, screen_rect)
                 hitbox_screen_rect = self.camera.apply(projectile.hitbox)
                 pygame.draw.rect(self.screen, (255, 0, 0), hitbox_screen_rect, 1)  # Debug
 
-            for deco in self.decor_group:
-                self.screen.blit(deco.image, self.camera.apply(deco.rect))
 
             for i, x in enumerate(range(0, self.level_width, self.tile_size * 2)):
                 screen_x = x - self.camera.get_offset()
@@ -195,16 +207,25 @@ class Level:
             self.player.draw_hud_gold(self.screen)
 
             if self.state == "game_over":
+                pygame.mixer.music.stop()
+                if not self.game_over_sound_played:
+                    gameOver_sound = pygame.mixer.Sound("assets/sound effect/game-over.mp3")
+                    gameOver_sound.play()
+                    self.game_over_sound_played = True
                 self.game_over_popup.draw()
 
             if self.check_level_complete():
                 self.has_finished = True
                 self.running = False
+            if self.has_finished:
+                pygame.mixer.music.stop()
+                levelComplete_sound = pygame.mixer.Sound("assets/sound effect/levelWin.mp3")
+                levelComplete_sound.play()
 
             pygame.display.flip()
 
     def reset_level(self):
-        self.player = Valk(100, SCREEN_HEIGHT - 200, self.player.money)
+        self.player = Valk(100, SCREEN_HEIGHT - 200, 0)
         self.camera.follow(self.player)
         self.combat_manager.player = self.player
         self.enemy_group.empty()
@@ -215,6 +236,10 @@ class Level:
 
         self.state = "playing"
         self.game_over_popup.active = False
+
+        self.game_over_sound_played = False
+        self.play_music()
+
         fade(self.screen, fade_in=True)
 
     def stop(self):
@@ -247,5 +272,5 @@ class Level:
             if coin.can_be_collected() and coin.rect.collidepoint(player_center):
                 self.player.money += 1
                 coin.kill()
-                # coin_sound = pygame.mixer.Sound("assets/sounds/coin_collect.wav")
-                # coin_sound.play()
+                coin_sound = pygame.mixer.Sound("assets/sound effect/collect-coin.mp3")
+                coin_sound.play()

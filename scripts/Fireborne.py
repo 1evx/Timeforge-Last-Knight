@@ -179,8 +179,7 @@ class Fireborne(pygame.sprite.Sprite):
     num_coins = 5
     for i in range(num_coins):
       offset_x = random.randint(-200, 150)
-      offset_y = random.randint(-5, 5)
-      coin = Coin(self.rect.centerx + offset_x, self.rect.centery + offset_y)
+      coin = Coin(self.rect.centerx + offset_x, 609)
       self.coin_group.add(coin)
 
   def draw_health_bar(self, surface, screen_rect):
