@@ -4,11 +4,10 @@ dark_castle_data = {
   "level_width": 8000,
   "tiles_per_row": 100,
   "tileset": "assets/tiles/oak_woods_tileset.png",
-  "background_music": "assets/sound effect/onGame.mp3",
+  "background_music": "assets/audio/music/lost-city.mp3",
   "backgrounds": [
     ("assets/backgrounds/dc_layer_1.png", 0.2),
     ("assets/backgrounds/dc_layer_2.png", 0.5),
-    # ("assets/backgrounds/dc_layer_3.png", 0.8)
   ],
   "decor": [
     {"type": "Fence1", "pos": [650, SCREEN_HEIGHT - 100]},
@@ -25,20 +24,25 @@ dark_castle_data = {
     {"type": "Rock_1", "pos": [2500, SCREEN_HEIGHT - 70]}, 
     {"type": "Rock_2", "pos": [2800, SCREEN_HEIGHT - 70]}, 
     {"type": "FallenSkeleton2", "pos": [2900, SCREEN_HEIGHT - 175]}, 
-    {"type": "Wall", "pos": [3000, SCREEN_HEIGHT - 160]},
-    {"type": "Fireplace", "pos": [3300, SCREEN_HEIGHT - 80]},
-    {"type": "Shop", "pos": [6500, SCREEN_HEIGHT - 405]},
   ],
-  "tiles": [
-    {"pos": [2300, 670], "tile_index": 2},
-    {"pos": [3400, 670], "tile_index": 2},
+  "tiles": [ 
   ],
   "enemies": [
-    # {"type": "Slime", "pos": [5800, SCREEN_HEIGHT - 120]},
-    # {"type": "Skeleton", "pos": [1900, SCREEN_HEIGHT - 185]},
-    {"type": "Nightborne", "pos": [3900, SCREEN_HEIGHT - 300]},
-    {"type": "Fireborne", "pos": [2000, SCREEN_HEIGHT - 370]},
-    # {"type": "SkeletonArcher", "pos": [1900, SCREEN_HEIGHT - 305]},
-    {"type": "Necromancer", "pos": [1000, SCREEN_HEIGHT - 230]}
+    {"type": "Nightborne", "pos": [900, SCREEN_HEIGHT - 300]},
+
+    {"type": "Nightborne", "pos": [1800, SCREEN_HEIGHT - 300]},
+    {"type": "Necromancer", "pos": [1900, SCREEN_HEIGHT - 272]},
+
+    {"type": "Nightborne", "pos": [4600, SCREEN_HEIGHT - 300]},
+    {"type": "Nightborne", "pos": [4800, SCREEN_HEIGHT - 300]},
+    {"type": "Necromancer", "pos": [5000, SCREEN_HEIGHT - 272]},
+
+    {"type": "Skeleton", "pos": [6000, SCREEN_HEIGHT - 185]},
+    {"type": "Skeleton", "pos": [6000, SCREEN_HEIGHT - 185]},
+
+    {"type": "Deathborne", "pos": [6700, SCREEN_HEIGHT - 325]},
+    {"type": "Necromancer", "pos": [6800, SCREEN_HEIGHT - 272]},
+
+
   ]
 }

@@ -1,7 +1,5 @@
 import random
-
 import pygame
-
 from scripts.Coin import Coin
 from scripts.utils import load_sprite_folder
 
@@ -19,7 +17,7 @@ class Fireborne(pygame.sprite.Sprite):
     }
 
     # Core stats
-    self.health = 6
+    self.health = 8
     self.alive = True
     self.state = "idle"
     self.frame_index = 0
@@ -189,7 +187,7 @@ class Fireborne(pygame.sprite.Sprite):
       bar_x = screen_rect.centerx - bar_width // 2
       bar_y = screen_rect.top + 120  # above the image
 
-      ratio = max(self.health / 6, 0)
+      ratio = max(self.health / 8, 0)
 
       bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
       pygame.draw.rect(surface, (60, 60, 60), bg_rect)

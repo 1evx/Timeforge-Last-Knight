@@ -1,35 +1,31 @@
 import random
-
 import pygame
-import math
-
 from scripts.Coin import Coin
-from scripts.utils import load_and_resize_frames
-from scripts.Projectile import Projectile
+from scripts.utils import load_sprite_folder
 
-class SkeletonArcher(pygame.sprite.Sprite):
-  def __init__(self, x, y, player, projectile_group,coin_group):
+class Deathborne(pygame.sprite.Sprite):
+  def __init__(self, x, y, player,coin_group):
     super().__init__()
     self.coin_group = coin_group
 
-    # Sprite sheet config
     self.animations = {
-      "idle": load_and_resize_frames(pygame.image.load("assets/sprites/skeletonArcher/idle/Idle.png").convert_alpha(), 0, 7, 128, 128, scale=2),
-      "walk":  load_and_resize_frames(pygame.image.load("assets/sprites/skeletonArcher/walk/Walk.png").convert_alpha(), 0, 8, 128, 128, scale=2),
-      "attack":   load_and_resize_frames(pygame.image.load("assets/sprites/skeletonArcher/attack/Attack_2.png").convert_alpha(), 0, 4, 128, 128, scale=2),
-      "hit":   load_and_resize_frames(pygame.image.load("assets/sprites/skeletonArcher/hurt/Hurt.png").convert_alpha(), 0, 2,  128, 128, scale=2),
-      "death":    load_and_resize_frames(pygame.image.load("assets/sprites/skeletonArcher/death/Dead.png").convert_alpha(), 0, 5,  128, 128, scale=2),
+      "attack": load_sprite_folder("assets/sprites/deathborne/attack", 3),
+      "death":  load_sprite_folder("assets/sprites/deathborne/death", 3),
+      "walk":   load_sprite_folder("assets/sprites/deathborne/walk", 3),
+      "idle":   load_sprite_folder("assets/sprites/deathborne/idle", 3),
+      "hit":    load_sprite_folder("assets/sprites/deathborne/hurt", 3),
     }
 
     # Core stats
-    self.health = 2
+    self.health = 8
     self.alive = True
     self.state = "idle"
     self.frame_index = 0
     self.animation_speed = 0.15
     self.image = self.animations[self.state][0]
     self.rect = self.image.get_rect(topleft=(x, y))
-    self.hitbox = self.rect.inflate(-130, -130)
+    self.hitbox = self.rect.inflate(-280, -100)
+    self.horizontal_offset = 100
 
     self.direction = 1
     self.speed = 2
@@ -39,21 +35,15 @@ class SkeletonArcher(pygame.sprite.Sprite):
     self.aggro_range = 500
     self.attack_range = 200
 
-    # Melee Attack
+    # Attack
     self.attacking = False
     self.attack_damage = 3
-    self.attack_timer = 2000
-    self.attack_windup = 2000
-    self.attack_cooldown = 1000
+    self.attack_timer = 4000  # ms
+    self.attack_windup = 5000   # ms
+    self.attack_cooldown = 5000  # ms
     self.last_attack_time = 0
     self.attack_active_frames = (3, 6)
     self.attack_has_hit = False
-
-    # Ranged Attack
-    self.projectile_group = projectile_group
-    self.shoot_range = 1000
-    self.shoot_cooldown = 2000  # ms
-    self.last_shot = 0
 
     # Hit
     self.hit_anim_playing = False
@@ -84,65 +74,52 @@ class SkeletonArcher(pygame.sprite.Sprite):
     distance = abs(player_dx)
     now = pygame.time.get_ticks()
 
-    # Shoot if in range
-    if distance <= self.shoot_range and now - self.last_shot >= self.shoot_cooldown:
-      self.shoot()
-      self.last_shot = now
-
-    # Melee attack
     if self.attacking:
-      self.direction = -1 if player_dx > 0 else 1
+      self.direction = 1 if player_dx > 0 else -1
       self.animate()
       current_frame = self.get_current_attack_frame()
       if self.attack_active_frames[0] <= current_frame <= self.attack_active_frames[1]:
         if (not self.attack_has_hit and self.get_attack_hitbox().colliderect(self.player.hitbox)):
           self.player.take_damage(self.attack_damage)
           self.attack_has_hit = True
+
       return
 
     if distance <= self.attack_range and now - self.last_attack_time >= self.attack_cooldown:
       self.attacking = True
-      self.attack_has_hit = False
+      self.attack_has_hit = False  # reset
       self.state = "attack"
       self.frame_index = 0
       self.last_attack_time = now
     elif distance <= self.aggro_range:
       self.state = "walk"
-      self.direction = -1 if player_dx > 0 else 1
+      self.direction = 1 if player_dx > 0 else -1
       self.rect.x += self.speed * self.direction
     else:
       self.state = "idle"
 
     self.animate()
     self.hitbox.center = self.rect.center
-    self.hitbox.centery += 70
-
-
-  def shoot(self):
-    # Calculate direction vector
-    dx = self.player.rect.centerx - self.rect.centerx
-    dy = self.player.rect.centery - self.rect.centery
-    angle = math.atan2(dy, dx)
-    speed = 8
-
-    # bullet = Projectile(self.rect.centerx, self.rect.centery, angle, speed)
-    # self.projectile_group.add(bullet)
-
+    self.hitbox.centery += 40   # Adjust postion y of the enemy hitbox
+    self.hitbox.centerx -= self.direction * self.horizontal_offset
 
   def animate(self):
     frames = self.animations.get(self.state, self.animations["idle"])
-
+    
     if self.state == "death":
-      if self.frame_index < len(frames) - 1:
+      if self.frame_index < 10:
         self.frame_index += self.animation_speed
       else:
+        self.frame_index = len(frames) - 1  # freeze at last frame
         self.kill()
+
     elif self.state == "attack":
       self.frame_index += self.animation_speed
       if self.frame_index >= len(frames):
         self.frame_index = 0
         self.attacking = False
         self.state = "idle"
+
     elif self.state == "hit":
       self.frame_index += self.animation_speed
       if self.frame_index >= len(frames):
@@ -156,7 +133,7 @@ class SkeletonArcher(pygame.sprite.Sprite):
       if self.frame_index >= len(frames):
         self.frame_index = 0
 
-    frame = frames[int(self.frame_index)]
+    frame = frames[min(int(self.frame_index), len(frames) - 1)]
     if self.direction == 1:
       frame = pygame.transform.flip(frame, True, False)
     self.image = frame
@@ -167,7 +144,7 @@ class SkeletonArcher(pygame.sprite.Sprite):
 
 
   def get_attack_hitbox(self):
-    width = 200
+    width = 250
     height = self.rect.height - 140
     new_top = self.rect.top + 140
 
@@ -198,7 +175,7 @@ class SkeletonArcher(pygame.sprite.Sprite):
     self.state = "death"
     self.frame_index = 0
 
-    num_coins = 4
+    num_coins = 5
     for i in range(num_coins):
       offset_x = random.randint(-200, 150)
       coin = Coin(self.rect.centerx + offset_x, 609)
@@ -208,10 +185,10 @@ class SkeletonArcher(pygame.sprite.Sprite):
     if self.alive:
       bar_width = 40
       bar_height = 5
-      bar_x = screen_rect.centerx - bar_width // 2
-      bar_y = screen_rect.top - 10  # above the image
+      bar_x = screen_rect.centerx - bar_width // 2 + (-100 * self.direction)
+      bar_y = screen_rect.top + 80  # above the image
 
-      ratio = max(self.health / 2, 0)
+      ratio = max(self.health / 8, 0)
 
       bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
       pygame.draw.rect(surface, (60, 60, 60), bg_rect)

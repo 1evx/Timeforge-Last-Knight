@@ -7,32 +7,54 @@ from levels.crystal_cave import crystal_cave_data
 from levels.dark_castle import dark_castle_data
 from scripts.Menu import Menu
 from scripts.utils import fade
+from scripts.UI import DemoEndScreen 
 
 def main():
-  money = 0
-  pygame.init()
-  screen = pygame.display.set_mode((Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT))
-  pygame.display.set_caption("Timeforge: The Last Knight")
-  levels = [haze_forest_data,crystal_cave_data, oak_forest_data, dark_castle_data]
+  while True:
+    money = 0
+    player_health = 10
+    
+    pygame.init()
+    screen = pygame.display.set_mode((Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT))
+    pygame.display.set_caption("Timeforge: The Last Knight")
+    
+    levels = [oak_forest_data, haze_forest_data, crystal_cave_data, dark_castle_data]
+    menu = Menu(screen)
+    if not menu.run():
+      pygame.quit()
+      return
 
-  menu = Menu(screen)
-  if not menu.run():
-    pygame.quit()
-    return
+    # Main game level loop
+    for i, level_data in enumerate(levels):
+      fade(screen, fade_in=True, speed=5)
+      level = Level(screen, level_data, money, player_health)
+      level.run()
+      money = level.player.money
+      player_health = level.player.health
 
-  for i, level_data in enumerate(levels):
-    fade(screen, fade_in=True, speed=5)
-    level = Level(screen, level_data,money)
-    level.run()
+      if not level.has_finished:
+        pygame.quit()
+        return
 
-    money = level.player.money
-    if not level.has_finished:
-      break
+      if i < len(levels) - 1:
+        fade(screen, fade_in=False, speed=5)
 
-    if i < len(levels) - 1:
-      fade(screen, fade_in=False, speed=5)
+    # After last level, show Demo Complete screen
+    demo_screen = DemoEndScreen(screen, Settings)
+    demo_screen.active = True
+    showing_demo_screen = True
 
-  pygame.quit()
+    while showing_demo_screen:
+      for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+          pygame.quit()
+          return
+        result = demo_screen.handle_event(event)
+        if result == "menu":
+          showing_demo_screen = False  # Go back to menu (loop restarts)
+      
+      demo_screen.draw()
+      pygame.display.flip()
 
 if __name__ == "__main__":
   main()
