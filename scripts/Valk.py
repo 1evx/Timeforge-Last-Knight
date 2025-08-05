@@ -3,7 +3,7 @@ from scripts import Settings, Coin
 from scripts.utils import load_sprite_folder
 
 class Valk(pygame.sprite.Sprite):
-  def __init__(self, x, y,money):
+  def __init__(self, x, y,money, health):
     super().__init__()
     # Valk Animation Material
     self.run_frames = load_sprite_folder("assets/sprites/valk/run")
@@ -27,7 +27,7 @@ class Valk(pygame.sprite.Sprite):
     self.hitbox.centerx += 100 # Adjust the image
 
     self.alive = True
-    self.health = 10
+    self.health = health
     self.money = money
     self.invincibility_time = 4000  # ms
 
@@ -446,6 +446,7 @@ class Valk(pygame.sprite.Sprite):
 
     # Optional border
     pygame.draw.rect(surface, (0, 0, 0), bg_rect, 2)
+
 
   def draw_hud_gold(self,surface):
     gold_x  = Settings.SCREEN_WIDTH - 140

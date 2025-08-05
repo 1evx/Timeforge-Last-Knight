@@ -4,7 +4,7 @@ haze_forest_data = {
   "level_width": 8000,
   "tiles_per_row": 100,
   "tileset": "assets/tiles/oak_woods_tileset.png",
-  "background_music": "assets/sound effect/onGame.mp3",
+  "background_music": "assets/audio/music/dark-wood.mp3",
   "backgrounds": [
     ("assets/backgrounds/hf_layer_1.png", 0.1),
     ("assets/backgrounds/hf_layer_2.png", 0.3),
@@ -31,31 +31,39 @@ haze_forest_data = {
     {"type": "Shop", "pos": [6500, SCREEN_HEIGHT - 405]},
   ],
   "tiles": [
-    {"pos": [2300, 670], "tile_index": 2},
-    {"pos": [3400, 670], "tile_index": 2},
-    {"pos": [3400, 670], "tile_index": 2},
   ],
   "enemies": [
-    {"type": "Skeleton", "pos": [600, SCREEN_HEIGHT - 185]},
-    {"type": "Skeleton", "pos": [750, SCREEN_HEIGHT - 185]},
+    {"type": "Mushroom", "pos": [900, SCREEN_HEIGHT - 250]},
+    {"type": "ShieldSkeleton", "pos": [1000, SCREEN_HEIGHT - 250]},
+    
+    {"type": "Necromancer", "pos": [1800, SCREEN_HEIGHT - 272]},
 
-    {"type": "Skeleton", "pos": [1150, SCREEN_HEIGHT - 185]},
-    {"type": "Necromancer", "pos": [1300, SCREEN_HEIGHT - 272]},
-    {"type": "Skeleton", "pos": [1350, SCREEN_HEIGHT - 185]},
-    {"type": "Skeleton", "pos": [1450, SCREEN_HEIGHT - 185]},
+    {"type": "Goblin", "pos": [2700, SCREEN_HEIGHT - 250]},
+    {"type": "Goblin", "pos": [2800, SCREEN_HEIGHT - 250]},
 
-    {"type": "Necromancer", "pos": [1700, SCREEN_HEIGHT - 272]},
-    {"type": "Skeleton", "pos": [1850, SCREEN_HEIGHT - 185]},
+    {"type": "ShieldSkeleton", "pos": [4500, SCREEN_HEIGHT - 250]},
+    {"type": "Mushroom", "pos": [4700, SCREEN_HEIGHT - 250]},
+    {"type": "Necromancer", "pos": [5000, SCREEN_HEIGHT - 272]},
+    {"type": "Necromancer", "pos": [5600, SCREEN_HEIGHT - 272]},
 
-    {"type": "Necromancer", "pos": [2400, SCREEN_HEIGHT - 272]},
-    {"type": "Necromancer", "pos": [2600, SCREEN_HEIGHT - 272]},
-    {"type": "SkeletonArcher", "pos": [2650, SCREEN_HEIGHT - 305]},
-    {"type": "Skeleton", "pos": [2750, SCREEN_HEIGHT - 185]},
-    {"type": "Skeleton", "pos": [3200, SCREEN_HEIGHT - 185]},
+    # {"type": "Skeleton", "pos": [600, SCREEN_HEIGHT - 185]},
+    # {"type": "Skeleton", "pos": [750, SCREEN_HEIGHT - 185]},
 
-    {"type": "Skeleton", "pos": [4200, SCREEN_HEIGHT - 185]},
-    {"type": "Necromancer", "pos": [4500, SCREEN_HEIGHT - 272]},
-    {"type": "Necromancer", "pos": [4600, SCREEN_HEIGHT - 272]},
-    {"type": "SkeletonArcher", "pos": [5000, SCREEN_HEIGHT - 305]},
+    # {"type": "Skeleton", "pos": [1150, SCREEN_HEIGHT - 185]},
+    # {"type": "Necromancer", "pos": [1300, SCREEN_HEIGHT - 272]},
+    # {"type": "Skeleton", "pos": [1350, SCREEN_HEIGHT - 185]},
+    # {"type": "Skeleton", "pos": [1450, SCREEN_HEIGHT - 185]},
+
+    # {"type": "Necromancer", "pos": [1700, SCREEN_HEIGHT - 272]},
+    # {"type": "Skeleton", "pos": [1850, SCREEN_HEIGHT - 185]},
+
+    # {"type": "Necromancer", "pos": [2400, SCREEN_HEIGHT - 272]},
+    # {"type": "Necromancer", "pos": [2600, SCREEN_HEIGHT - 272]},
+    # {"type": "Skeleton", "pos": [2750, SCREEN_HEIGHT - 185]},
+    # {"type": "Skeleton", "pos": [3200, SCREEN_HEIGHT - 185]},
+
+    # {"type": "Skeleton", "pos": [4200, SCREEN_HEIGHT - 185]},
+    # {"type": "Necromancer", "pos": [4500, SCREEN_HEIGHT - 272]},
+    # {"type": "Necromancer", "pos": [4600, SCREEN_HEIGHT - 272]},
   ],
 }

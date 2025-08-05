@@ -5,7 +5,7 @@ oak_forest_data = {
   "level_width": 8000,
   "tiles_per_row": 100,
   "tileset": "assets/tiles/oak_woods_tileset.png",
-  "background_music": "assets/sound effect/onGame.mp3",
+  "background_music": "assets/audio/music/hall-of-king.mp3",
   "backgrounds": [
     ("assets/backgrounds/of_layer_1.png", 0.2),
     ("assets/backgrounds/of_layer_2.png", 0.5),
@@ -33,7 +33,6 @@ oak_forest_data = {
     {"type": "Vase_1", "pos": [3300, SCREEN_HEIGHT - 109]},
     {"type": "Vase_2", "pos": [3320, SCREEN_HEIGHT - 90]},
     {"type": "Booth_1", "pos": [3400, SCREEN_HEIGHT - 260]},
-    {"type": "FallenSkeleton2", "pos": [3600, SCREEN_HEIGHT - 175]},
     {"type": "Tableset_1", "pos": [3700, SCREEN_HEIGHT - 130]},
     {"type": "Grass_2", "pos": [4000, SCREEN_HEIGHT - 60]}, 
     {"type": "Grass_1", "pos": [4200, SCREEN_HEIGHT - 55]},
@@ -53,8 +52,9 @@ oak_forest_data = {
     {"pos": [4000, 670], "tile_index": 2},
   ],
   "enemies": [
-    {"type": "PracticeTarget", "pos": [4500, SCREEN_HEIGHT - 160]}, 
+    {"type": "PracticeTarget", "pos": [2600, SCREEN_HEIGHT - 160]}, 
     {"type": "Slime", "pos": [5800, SCREEN_HEIGHT - 120]},
+    {"type": "Slime", "pos": [6300, SCREEN_HEIGHT - 120]},
   ]
 }
 
@@ -62,9 +62,9 @@ oak_forest_data = {
 row = generate_tile_row(
   start_x=2300,
   y=670,
-  tile_indices=[2, 1],   # your pattern
+  tile_indices=[2, 1],   # pattern
   tile_width=40,
-  count=15               # how many tiles
+  count=15               # tiles
 )
 oak_forest_data["tiles"].extend(row)
 row2 = generate_tile_row(

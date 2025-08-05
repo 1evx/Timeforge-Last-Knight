@@ -35,7 +35,7 @@ class Necromancer(pygame.sprite.Sprite):
     # Player
     self.player = player
     self.aggro_range = 500
-    self.shoot_range = 1200
+    self.shoot_range = 800
     self.retreat_range = 200
 
     # Ranged Attack

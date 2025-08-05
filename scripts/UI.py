@@ -55,3 +55,50 @@ class GameOverPopup:
         if button["rect"].collidepoint(mouse_pos):
           return button["action"]
     return None
+  
+class DemoEndScreen:
+  def __init__(self, screen, settings):
+    self.screen = screen
+    self.settings = settings
+    self.font = pygame.font.Font(None, 72)
+    self.button_font = pygame.font.Font(None, 48)
+    self.active = False
+
+    # Calculate button size based on text
+    self.button_text = self.button_font.render("Back to Menu", True, (255, 255, 255))
+    text_width = self.button_text.get_width()
+    text_height = self.button_text.get_height()
+    padding_x, padding_y = 40, 20  # Padding around text
+
+    button_width = text_width + padding_x
+    button_height = text_height + padding_y
+    center_x = self.settings.SCREEN_WIDTH // 2
+    center_y = self.settings.SCREEN_HEIGHT // 2 + 50
+
+    self.button = pygame.Rect(center_x - button_width // 2, center_y, button_width, button_height)
+
+  def draw(self):
+    if not self.active:
+      return
+    self.screen.fill((0, 0, 0))
+
+    # Draw "Demo Complete!" text
+    text = self.font.render("Demo Complete!", True, (255, 255, 255))
+    text_rect = text.get_rect(center=(self.settings.SCREEN_WIDTH // 2, self.settings.SCREEN_HEIGHT // 2 - 50))
+    self.screen.blit(text, text_rect)
+
+    # Draw button
+    pygame.draw.rect(self.screen, (80, 80, 80), self.button)
+    pygame.draw.rect(self.screen, (255, 255, 255), self.button, 2)
+
+    # Center and draw button text
+    btn_text_rect = self.button_text.get_rect(center=self.button.center)
+    self.screen.blit(self.button_text, btn_text_rect)
+
+  def handle_event(self, event):
+    if not self.active:
+      return None
+    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+      if self.button.collidepoint(event.pos):
+        return "menu"
+    return None

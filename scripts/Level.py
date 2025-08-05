@@ -1,6 +1,5 @@
 import pygame
 from scripts import Settings
-from scripts.Coin import Coin
 from scripts.Settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from scripts.UI import GameOverPopup
 from scripts.Valk import Valk
@@ -11,8 +10,8 @@ from scripts.Skeleton import Skeleton
 from scripts.Slime import Slime
 from scripts.Nightborne import Nightborne
 from scripts.Fireborne import Fireborne
-from scripts.SkeletonArcher import SkeletonArcher
 from scripts.Necromancer import Necromancer
+from scripts.Deathborne import Deathborne
 from scripts.Goblin import Goblin
 from scripts.Mushroom import Mushroom
 from scripts.ShieldSkeleton import ShieldSkeleton
@@ -23,7 +22,7 @@ from scripts.combat_manager import CombatManager
 from assets.decorations.deco import DECOR_DEFINITIONS
 
 class Level:
-    def __init__(self, screen, level_data, money):
+    def __init__(self, screen, level_data, money, health):
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.running = True
@@ -70,7 +69,7 @@ class Level:
         self.background_music = level_data["background_music"]
 
         # Player
-        self.player = Valk(100, SCREEN_HEIGHT - 200, money)
+        self.player = Valk(100, SCREEN_HEIGHT - 200, money, health)
         self.camera.follow(self.player)
 
         # Enemies, projectiles, and coins
@@ -85,6 +84,7 @@ class Level:
 
     def play_music(self, loop=-1):
         pygame.mixer.music.load(self.background_music)
+        pygame.mixer.music.set_volume(0.4)
         pygame.mixer.music.play(loops=loop)
 
     def _initialize_enemies(self):
@@ -100,8 +100,6 @@ class Level:
                 enemy = Nightborne(x, y, self.player, self.coin_group)
             elif enemy_type == "Fireborne":
                 enemy = Fireborne(x, y, self.player, self.coin_group)
-            elif enemy_type == "SkeletonArcher":
-                enemy = SkeletonArcher(x, y, self.player, self.projectile_group, self.coin_group)
             elif enemy_type == "Necromancer":
                 enemy = Necromancer(x, y, self.player, self.projectile_group, self.coin_group)
             elif enemy_type == "PracticeTarget":
@@ -112,6 +110,8 @@ class Level:
                 enemy = Mushroom(x, y, self.player, self.coin_group)
             elif enemy_type == "ShieldSkeleton":
                 enemy = ShieldSkeleton(x, y, self.player, self.coin_group)
+            elif enemy_type == "Deathborne":
+                enemy = Deathborne(x, y, self.player, self.coin_group)
             else:
                 continue
             if enemy is not None:
@@ -171,8 +171,8 @@ class Level:
             for projectile in self.projectile_group:
                 screen_rect = self.camera.apply(projectile.rect)
                 self.screen.blit(projectile.image, screen_rect)
-                hitbox_screen_rect = self.camera.apply(projectile.hitbox)
-                pygame.draw.rect(self.screen, (255, 0, 0), hitbox_screen_rect, 1)  # Debug
+                # hitbox_screen_rect = self.camera.apply(projectile.hitbox)
+                # pygame.draw.rect(self.screen, (255, 0, 0), hitbox_screen_rect, 1)  # Debug
 
 
             for i, x in enumerate(range(0, self.level_width, self.tile_size * 2)):
@@ -188,15 +188,16 @@ class Level:
                 screen_rect = self.camera.apply(enemy.rect)
                 self.screen.blit(enemy.image, screen_rect)
                 enemy.draw_health_bar(self.screen, screen_rect)
-                hitbox_screen = self.camera.apply(enemy.hitbox)
-                pygame.draw.rect(self.screen, (0, 255, 0), hitbox_screen, 1)  # Debug
+                # Debug
+                # hitbox_screen = self.camera.apply(enemy.hitbox)
+                # pygame.draw.rect(self.screen, (0, 255, 0), hitbox_screen, 1)
 
-                # Draw melee hitbox if enemy is attacking
-                if hasattr(enemy, 'get_attack_hitbox'):
-                    attack_hitbox = enemy.get_attack_hitbox()
-                    if attack_hitbox:
-                        attack_screen_rect = self.camera.apply(attack_hitbox)
-                        pygame.draw.rect(self.screen, (255, 0, 0), attack_screen_rect, 1)  # Red for attack hitbox
+                # # Draw melee hitbox if enemy is attacking
+                # if hasattr(enemy, 'get_attack_hitbox'):
+                #     attack_hitbox = enemy.get_attack_hitbox()
+                #     if attack_hitbox:
+                #         attack_screen_rect = self.camera.apply(attack_hitbox)
+                #         pygame.draw.rect(self.screen, (255, 0, 0), attack_screen_rect, 1)  # Red for attack hitbox
 
             for coin in self.coin_group:
                 self.screen.blit(coin.image, self.camera.apply(coin.rect))
