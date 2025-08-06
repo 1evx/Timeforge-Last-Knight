@@ -71,6 +71,9 @@ class Level:
         # Player
         self.player = Valk(100, SCREEN_HEIGHT - 200, money, health)
         self.camera.follow(self.player)
+        self.current_health = health
+        self.current_money = money
+
 
         # Enemies, projectiles, and coins
         self.enemy_group = pygame.sprite.Group()
@@ -226,7 +229,7 @@ class Level:
             pygame.display.flip()
 
     def reset_level(self):
-        self.player = Valk(100, SCREEN_HEIGHT - 200, 0)
+        self.player = Valk(100, SCREEN_HEIGHT - 200, self.current_money, self.current_health)
         self.camera.follow(self.player)
         self.combat_manager.player = self.player
         self.enemy_group.empty()
