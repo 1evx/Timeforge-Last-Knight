@@ -55,6 +55,8 @@ class Menu:
                 'size': random.randint(1, 3)
             })
 
+        self.menuSound = pygame.mixer.Sound("assets/sound effect/onGame.mp3")
+        self.menuSound.play()
         self.running = True
 
     def load_side_images(self):
@@ -217,14 +219,17 @@ class Menu:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.menuSound.stop()
                     return False
 
                 elif event.type == pygame.KEYDOWN:
                     result = self.handle_keyboard_navigation(event)
+                    self.menuSound.stop()
                     if result is not None:
                         return result
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
+                    self.menuSound.stop()
                     mouse_pos = pygame.mouse.get_pos()
                     for i, button in enumerate(self.buttons):
                         if button.collidepoint(mouse_pos):
@@ -239,7 +244,6 @@ class Menu:
                         if button.collidepoint(mouse_pos):
                             self.selected_button = i
                             break
-
             self.draw()
 
         return True
