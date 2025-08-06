@@ -1,6 +1,7 @@
 import pygame
 import math
 from scripts import Settings
+from scripts.MenuBoss import MenuBoss
 from scripts.MenuValk import MenuValk
 
 
@@ -57,11 +58,11 @@ class Menu:
         self.running = True
 
     def load_side_images(self):
-        self.left_valk = MenuValk(350, Settings.SCREEN_HEIGHT // 2 - 32)
+        self.left_valk = MenuValk(390, Settings.SCREEN_HEIGHT // 2 - 32)
         self.left_image = self.left_valk.image
         self.left_image_rect = self.left_valk.rect
 
-        self.right_valk = MenuValk(Settings.SCREEN_WIDTH - 600, Settings.SCREEN_HEIGHT // 2 - 32)
+        self.right_valk = MenuBoss(Settings.SCREEN_WIDTH - 590, Settings.SCREEN_HEIGHT // 2 - 32)
         self.right_image = self.right_valk.image
         self.right_image_rect = self.right_valk.rect
 
@@ -69,26 +70,34 @@ class Menu:
         float_offset_left = int(5 * math.sin(self.time * 0.003))
         float_offset_right = int(5 * math.sin(self.time * 0.003 + 3.14))
 
+        fixed_glow_size = (300, 180)
+
         if self.left_valk:
             self.left_image = self.left_valk.image
-            glow_rect = self.left_image_rect.copy()
-            glow_rect.inflate_ip(10, 10)
+            self.left_image_rect = self.left_valk.rect
+            glow_rect = pygame.Rect(0, 0, *fixed_glow_size)
+            glow_rect.center = self.left_image_rect.center
             glow_rect.y += float_offset_left
-            glow_surface = pygame.Surface((glow_rect.width+80, glow_rect.height), pygame.SRCALPHA)
-            pygame.draw.rect(glow_surface, (100, 150, 255, 30), glow_surface.get_rect(), border_radius=10)
+
+            glow_surface = pygame.Surface(glow_rect.size, pygame.SRCALPHA)
+            pygame.draw.rect(glow_surface, (100, 150, 255, 30), glow_surface.get_rect(), border_radius=20)
             self.screen.blit(glow_surface, glow_rect)
+
             animated_rect = self.left_image_rect.copy()
             animated_rect.y += float_offset_left
             self.screen.blit(self.left_image, animated_rect)
 
         if self.right_valk:
             self.right_image = self.right_valk.image
-            glow_rect = self.right_image_rect.copy()
-            glow_rect.inflate_ip(10, 10)
+            self.right_image_rect = self.right_valk.rect
+            glow_rect = pygame.Rect(0, 0, *fixed_glow_size)
+            glow_rect.center = self.right_image_rect.center
             glow_rect.y += float_offset_right
-            glow_surface = pygame.Surface((glow_rect.width+80, glow_rect.height), pygame.SRCALPHA)
-            pygame.draw.rect(glow_surface, (255, 150, 100, 30), glow_surface.get_rect(), border_radius=10)
+
+            glow_surface = pygame.Surface(glow_rect.size, pygame.SRCALPHA)
+            pygame.draw.rect(glow_surface, (255, 150, 100, 30), glow_surface.get_rect(), border_radius=20)
             self.screen.blit(glow_surface, glow_rect)
+
             animated_rect = self.right_image_rect.copy()
             animated_rect.y += float_offset_right
             self.screen.blit(self.right_image, animated_rect)
@@ -106,6 +115,8 @@ class Menu:
 
         if self.left_valk:
             self.left_valk.update_demo(dt)
+        if self.right_valk:
+            self.right_valk.update_demo(dt)
 
     def draw_gradient_background(self):
         for y in range(Settings.SCREEN_HEIGHT):
