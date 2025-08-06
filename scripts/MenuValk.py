@@ -1,8 +1,6 @@
-# Approach 1: Simplified MenuValk class for demo purposes
 import pygame
 import random
 from scripts.utils import load_sprite_folder
-
 
 class MenuValk(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -16,7 +14,7 @@ class MenuValk(pygame.sprite.Sprite):
         self.current_animation = "idle"
         self.frame_index = 0
         self.animation_speed = 0.15
-        self.image = self.idle_frames[0]
+        self.image = self.idle_frames[0] if self.idle_frames else self.create_placeholder_sprite()
         self.rect = self.image.get_rect(topleft=(x, y))
 
         self.demo_timer = 0
@@ -28,9 +26,10 @@ class MenuValk(pygame.sprite.Sprite):
         self.current_attack_index = 0
 
     def create_placeholder_sprite(self, color=(100, 150, 255)):
-        surface = pygame.Surface((64, 64), pygame.SRCALPHA)
-        pygame.draw.rect(surface, color, (16, 8, 32, 48))  # Body
-        pygame.draw.circle(surface, (255, 220, 180), (32, 20), 8)  # Head
+        surface = pygame.Surface((96, 96), pygame.SRCALPHA)
+        pygame.draw.rect(surface, color, (24, 12, 48, 72))  # Body
+        pygame.draw.circle(surface, (255, 220, 180), (48, 30), 12)  # Head
+        pygame.draw.rect(surface, (200, 100, 50), (36, 36, 24, 4))  # Sword
         return surface
 
     def update_demo(self, dt):
@@ -54,14 +53,17 @@ class MenuValk(pygame.sprite.Sprite):
             self.facing *= -1
 
     def animate(self):
-        if self.current_animation == "attack1":
+        # Get the appropriate frames based on current animation
+        if self.current_animation == "attack1" and self.attack1_frames:
             frames = self.attack1_frames
-        elif self.current_animation == "attack2":
+        elif self.current_animation == "attack2" and self.attack2_frames:
             frames = self.attack2_frames
-        elif self.current_animation == "dash_attack":
+        elif self.current_animation == "dash_attack" and self.dash_attack_frames:
             frames = self.dash_attack_frames
-        else:
+        elif self.idle_frames:
             frames = self.idle_frames
+        else:
+            return  # No frames available
 
         self.frame_index += self.animation_speed
 
@@ -74,6 +76,7 @@ class MenuValk(pygame.sprite.Sprite):
                 self.frame_index = 0
 
         self.image = frames[int(self.frame_index)]
+        self.image = pygame.transform.smoothscale(self.image, (192, 132))
 
         if self.facing == -1:
             self.image = pygame.transform.flip(self.image, True, False)
