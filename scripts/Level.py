@@ -19,6 +19,7 @@ from scripts.Shop import Shop
 from scripts.PracticeTarget import PracticeTarget
 from scripts.Platform import Platform
 from scripts.combat_manager import CombatManager
+from scripts.tutorials import Tutorial
 from assets.decorations.deco import DECOR_DEFINITIONS
 
 class Level:
@@ -78,6 +79,12 @@ class Level:
         self.current_max_health = max_health
         self.current_money = money
         self.current_power = power
+
+        self.tutorial = None
+        if (self.level_data.get('level_width') == 8000 and 
+            self.level_data.get('tiles_per_row') == 100 and
+            'hall-of-king.mp3' in self.level_data.get('background_music', '')):
+            self.tutorial = Tutorial(self.screen)
 
         # Enemies, projectiles, and coins
         self.enemy_group = pygame.sprite.Group()
@@ -160,8 +167,12 @@ class Level:
                                 shop.show_ui = True
                                 break  # Only open one shop
 
+                    # Handle tutorial completion input
+                    if self.tutorial and self.tutorial.handle_completion_input(event):
+                        self.tutorial = None  # Remove tutorial after completion
+                        continue
 
-                    # Only allow combat input if no UI is active
+                    # Only allow combat input if no UI is active    
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 1:
                             self.player.attack()
@@ -169,6 +180,10 @@ class Level:
                             self.player.dash_attack()
 
             if self.state == "playing":
+                # Update tutorial if active
+                if self.tutorial and not self.tutorial.is_tutorial_complete():
+                    mouse_buttons = pygame.mouse.get_pressed()
+                    self.tutorial.update(keys, mouse_buttons, self.player)
                 self.combat_manager.check_collisions()
                 self.player.update(keys, self.platforms)
                 self.decor_group.update()
@@ -232,6 +247,13 @@ class Level:
             self.player.draw_health_bar(self.screen, self.camera.apply(self.player.rect))
             self.player.draw_hud_status_bars(self.screen)
             self.player.draw_hud_gold(self.screen)
+            
+            # Draw tutorial UI
+            if self.tutorial:
+                if self.tutorial.is_tutorial_complete():
+                    self.tutorial.draw_completion_screen()
+                else:
+                    self.tutorial.draw()
 
             if self.state == "game_over":
                 pygame.mixer.music.stop()
@@ -241,7 +263,11 @@ class Level:
                     self.game_over_sound_played = True
                 self.game_over_popup.draw()
 
-            if self.check_level_complete():
+            # Check level completion (for oak forest, require tutorial completion)
+            if self.tutorial and not self.tutorial.is_tutorial_complete():
+                # Don't complete level until tutorial is done
+                pass
+            elif self.check_level_complete():
                 self.has_finished = True
                 self.running = False
             if self.has_finished:
