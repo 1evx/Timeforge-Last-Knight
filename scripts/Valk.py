@@ -3,7 +3,7 @@ from scripts import Settings, Coin
 from scripts.utils import load_sprite_folder
 
 class Valk(pygame.sprite.Sprite):
-  def __init__(self, x, y,money, health):
+  def __init__(self, x, y, money, health, speed, max_health, power):
     super().__init__()
     # Valk Animation Material
     self.run_frames = load_sprite_folder("assets/sprites/valk/run")
@@ -28,9 +28,9 @@ class Valk(pygame.sprite.Sprite):
 
     self.alive = True
     self.health = health
+    self.max_health = max_health
     self.money = money
     self.invincibility_time = 4000  # ms
-
     self.knockback_velocity = 20
     self.knockback_timer = 200
 
@@ -38,9 +38,9 @@ class Valk(pygame.sprite.Sprite):
     self.velocity_y = 0
     self.on_ground = False
     self.direction = 0  # -1 = left, 1 = right, 0 = idle
-
     self.facing = 1
     self.is_crouching = False
+    self.speed = speed
 
     # Valk Attack State
     self.is_attacking = False
@@ -59,6 +59,7 @@ class Valk(pygame.sprite.Sprite):
     self.combo_window = 0  # ms to press again for attack2
     self.combo_queued = False
     self.attack_damage = 1
+    self.attack_power = power
 
     # Valk Dash Attack State
     self.is_dashing = False
@@ -81,6 +82,9 @@ class Valk(pygame.sprite.Sprite):
     self.hud_coin = Coin.Coin(0,0)
     for i in range(len(self.hud_coin.frames)):
       self.hud_coin.frames[i] = pygame.transform.scale(self.hud_coin.frames[i], (32, 32))
+
+    self.purchased_upgrades = set() 
+
 
   def handle_input(self, keys):
     current_time = pygame.time.get_ticks()
@@ -170,14 +174,14 @@ class Valk(pygame.sprite.Sprite):
       return
 
     if keys[pygame.K_a]:
-      self.rect.x -= Settings.PLAYER_SPEED
+      self.rect.x -= self.speed
       self.direction = -1
       self.facing = -1
       self.state = "run"
       return
 
     if keys[pygame.K_d]:
-      self.rect.x += Settings.PLAYER_SPEED
+      self.rect.x += self.speed
       self.direction = 1
       self.facing = 1
       self.state = "run"
@@ -303,8 +307,8 @@ class Valk(pygame.sprite.Sprite):
     if not self.alive:
       return
     current_time = pygame.time.get_ticks()
-    self.attack_timer = pygame.time.get_ticks()
-    self.attack_damage = 1
+    self.attack_timer = current_time
+    self.attack_damage = self.attack_power
 
     # Cancel dash if currently dashing
     if self.is_dashing:
@@ -339,7 +343,7 @@ class Valk(pygame.sprite.Sprite):
 
   def dash_attack(self):
     current_time = pygame.time.get_ticks()
-    self.attack_damage = 2
+    self.attack_damage = self.attack_power * 2  # Heavy attack does double damage
 
     # Block if currently attacking or dashing
     if self.state.startswith("attack") or self.is_dashing:
@@ -416,7 +420,7 @@ class Valk(pygame.sprite.Sprite):
       bar_x = screen_rect.centerx - bar_width // 2
       bar_y = screen_rect.top  # above the image
 
-      ratio = max(self.health / 10, 0)
+      ratio = max(self.health / self.max_health, 0)
 
       bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
       pygame.draw.rect(surface, (60, 60, 60), bg_rect)
@@ -427,25 +431,56 @@ class Valk(pygame.sprite.Sprite):
       pygame.draw.rect(surface, (0, 0, 0), bg_rect, 1)
 
 
-  def draw_hud_health_bar(self, surface):
-    # Fixed position in top left
-    bar_width = 200
-    bar_height = 20
+  def draw_hud_status_bars(self, surface):
     bar_x = 20
     bar_y = 20
+    spacing = 35
+    bar_width = 200
+    bar_height = 20
+    font = pygame.font.Font(None, 24)
 
-    ratio = max(self.health / 10, 0)
-
-    # Background
+    # === Health Bar ===
+    ratio = max(self.health / self.max_health, 0)
     bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
     pygame.draw.rect(surface, (60, 60, 60), bg_rect)
-
-    # Health amount
     hp_rect = pygame.Rect(bar_x, bar_y, int(bar_width * ratio), bar_height)
     pygame.draw.rect(surface, (255, 0, 0), hp_rect)
-
-    # Optional border
     pygame.draw.rect(surface, (0, 0, 0), bg_rect, 2)
+
+    health_text = f"Health: {self.health} / {self.max_health}"
+    text_surf = font.render(health_text, True, (255, 0, 0))
+    text_rect = text_surf.get_rect(midleft=(bar_x + bar_width + 10, bar_y + bar_height // 2))
+    surface.blit(text_surf, text_rect)
+
+    # === Speed Bar ===
+    bar_y += spacing
+    max_speed = 7
+    speed_ratio = self.speed / max_speed
+    speed_ratio = max(0, min(speed_ratio, 1))
+
+    bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
+    pygame.draw.rect(surface, (60, 60, 60), bg_rect)
+    fill_rect = pygame.Rect(bar_x, bar_y, int(bar_width * speed_ratio), bar_height)
+    pygame.draw.rect(surface, (0, 200, 255), fill_rect)
+    pygame.draw.rect(surface, (0, 0, 0), bg_rect, 2)
+
+    speed_text = f"Speed: {int(self.speed)}"
+    text_surf = font.render(speed_text, True, (0, 200, 255))
+    surface.blit(text_surf, (bar_x + bar_width + 10, bar_y))
+
+    # === Attack Power Bar ===
+    bar_y += spacing
+    power_ratio = self.attack_power / 2
+    power_ratio = max(0, min(power_ratio, 1))
+    bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
+    pygame.draw.rect(surface, (60, 60, 60), bg_rect)
+    fill_rect = pygame.Rect(bar_x, bar_y, int(bar_width * power_ratio), bar_height)
+    pygame.draw.rect(surface, (255, 165, 0), fill_rect)
+    pygame.draw.rect(surface, (0, 0, 0), bg_rect, 2)
+
+    power_text = f"Power: {self.attack_power}"
+    text_surf = font.render(power_text, True, (255, 165, 0))
+    surface.blit(text_surf, (bar_x + bar_width + 10, bar_y))
 
 
   def draw_hud_gold(self,surface):

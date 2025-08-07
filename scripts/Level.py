@@ -22,7 +22,7 @@ from scripts.combat_manager import CombatManager
 from assets.decorations.deco import DECOR_DEFINITIONS
 
 class Level:
-    def __init__(self, screen, level_data, money, health):
+    def __init__(self, screen, level_data, money, health, speed, max_health, power):
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.running = True
@@ -55,12 +55,14 @@ class Level:
 
         # Decorations
         self.decor_group = pygame.sprite.Group()
+        self.shop_group = pygame.sprite.Group()
+
         for obj in self.level_data["decor"]:
             decor_type = obj["type"]
             pos = obj["pos"]
             if decor_type == "Shop":
                 shop = Shop(*pos)
-                self.decor_group.add(shop)
+                self.shop_group.add(shop)
             else:
                 sprite = self.create_decor_sprite(decor_type, pos)
                 self.decor_group.add(sprite)
@@ -69,11 +71,13 @@ class Level:
         self.background_music = level_data["background_music"]
 
         # Player
-        self.player = Valk(100, SCREEN_HEIGHT - 200, money, health)
+        self.player = Valk(100, SCREEN_HEIGHT - 200, money, health, speed, max_health, power)
         self.camera.follow(self.player)
         self.current_health = health
+        self.current_speed = speed
+        self.current_max_health = max_health
         self.current_money = money
-
+        self.current_power = power
 
         # Enemies, projectiles, and coins
         self.enemy_group = pygame.sprite.Group()
@@ -128,6 +132,7 @@ class Level:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+
                 elif self.state == "game_over":
                     action = self.game_over_popup.handle_event(event)
                     if action == "restart":
@@ -135,7 +140,28 @@ class Level:
                     elif action == "quit":
                         self.running = False
                         self.has_finished = False
+
                 elif self.state == "playing":
+                    shop_ui_active = any(shop.show_ui for shop in self.shop_group)
+
+                    # If a shop UI is active, forward events to it and block other inputs
+                    if shop_ui_active:
+                        for shop in self.shop_group:
+                            if shop.show_ui:
+                                shop.handle_input(event, self.player)
+                                if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
+                                    shop.show_ui = False  # Close shop with E
+                        continue  # Skip player controls if shop UI is active
+
+                    # Player presses E to open shop
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
+                        for shop in self.shop_group:
+                            if shop.show_prompt:
+                                shop.show_ui = True
+                                break  # Only open one shop
+
+
+                    # Only allow combat input if no UI is active
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 1:
                             self.player.attack()
@@ -146,6 +172,8 @@ class Level:
                 self.combat_manager.check_collisions()
                 self.player.update(keys, self.platforms)
                 self.decor_group.update()
+                self.shop_group.update(self.player)
+                for shop in self.shop_group: shop.check_interaction(self.player)
                 self.enemy_group.update()
                 self.projectile_group.update()
                 self.coin_group.update()
@@ -171,12 +199,17 @@ class Level:
             for deco in self.decor_group:
                 self.screen.blit(deco.image, self.camera.apply(deco.rect))
 
+            for shop in self.shop_group:
+                self.screen.blit(shop.image, self.camera.apply(shop.rect))
+
+            for shop in self.shop_group:
+                shop.draw_prompt(self.screen, self.camera)
+                shop.draw_ui(self.screen, self.player)
+
+            # Projectile
             for projectile in self.projectile_group:
                 screen_rect = self.camera.apply(projectile.rect)
                 self.screen.blit(projectile.image, screen_rect)
-                # hitbox_screen_rect = self.camera.apply(projectile.hitbox)
-                # pygame.draw.rect(self.screen, (255, 0, 0), hitbox_screen_rect, 1)  # Debug
-
 
             for i, x in enumerate(range(0, self.level_width, self.tile_size * 2)):
                 screen_x = x - self.camera.get_offset()
@@ -191,23 +224,13 @@ class Level:
                 screen_rect = self.camera.apply(enemy.rect)
                 self.screen.blit(enemy.image, screen_rect)
                 enemy.draw_health_bar(self.screen, screen_rect)
-                # Debug
-                # hitbox_screen = self.camera.apply(enemy.hitbox)
-                # pygame.draw.rect(self.screen, (0, 255, 0), hitbox_screen, 1)
-
-                # # Draw melee hitbox if enemy is attacking
-                # if hasattr(enemy, 'get_attack_hitbox'):
-                #     attack_hitbox = enemy.get_attack_hitbox()
-                #     if attack_hitbox:
-                #         attack_screen_rect = self.camera.apply(attack_hitbox)
-                #         pygame.draw.rect(self.screen, (255, 0, 0), attack_screen_rect, 1)  # Red for attack hitbox
 
             for coin in self.coin_group:
                 self.screen.blit(coin.image, self.camera.apply(coin.rect))
 
             self.screen.blit(self.player.image, self.camera.apply(self.player.rect))
             self.player.draw_health_bar(self.screen, self.camera.apply(self.player.rect))
-            self.player.draw_hud_health_bar(self.screen)
+            self.player.draw_hud_status_bars(self.screen)
             self.player.draw_hud_gold(self.screen)
 
             if self.state == "game_over":
@@ -229,7 +252,7 @@ class Level:
             pygame.display.flip()
 
     def reset_level(self):
-        self.player = Valk(100, SCREEN_HEIGHT - 200, self.current_money, self.current_health)
+        self.player = Valk(100, SCREEN_HEIGHT - 200, self.current_money, self.current_health, self.current_speed, self.current_max_health, self.current_power)
         self.camera.follow(self.player)
         self.combat_manager.player = self.player
         self.enemy_group.empty()
