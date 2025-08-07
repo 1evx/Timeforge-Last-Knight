@@ -80,7 +80,9 @@ class Level:
         self.current_money = money
         self.current_power = power
 
+        # Tutorial system (only for oak forest level)
         self.tutorial = None
+        # Check if this is the oak forest level by checking the level data structure
         if (self.level_data.get('level_width') == 8000 and 
             self.level_data.get('tiles_per_row') == 100 and
             'hall-of-king.mp3' in self.level_data.get('background_music', '')):
@@ -184,6 +186,7 @@ class Level:
                 if self.tutorial and not self.tutorial.is_tutorial_complete():
                     mouse_buttons = pygame.mouse.get_pressed()
                     self.tutorial.update(keys, mouse_buttons, self.player)
+                
                 self.combat_manager.check_collisions()
                 self.player.update(keys, self.platforms)
                 self.decor_group.update()
