@@ -1,5 +1,6 @@
 import pygame
 from scripts import Settings
+from scripts.GoldEffect import GoldEffect
 from scripts.Settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from scripts.UI import GameOverPopup
 from scripts.Valk import Valk
@@ -92,6 +93,7 @@ class Level:
         self.enemy_group = pygame.sprite.Group()
         self.projectile_group = pygame.sprite.Group()
         self.coin_group = pygame.sprite.Group()
+        self.coin_effect = pygame.sprite.Group()
         self._initialize_enemies()
 
         self.combat_manager = CombatManager(self.player, self.enemy_group)
@@ -194,9 +196,10 @@ class Level:
                 for shop in self.shop_group: shop.check_interaction(self.player)
                 self.enemy_group.update()
                 self.projectile_group.update()
-                self.coin_group.update()
                 self.camera.update()
                 self.background.update(self.camera.get_offset())
+                self.coin_group.update()
+                self.coin_effect.update()
 
                 self.check_coin_collection()
 
@@ -245,6 +248,9 @@ class Level:
 
             for coin in self.coin_group:
                 self.screen.blit(coin.image, self.camera.apply(coin.rect))
+
+            for effect in self.coin_effect:
+                self.screen.blit(effect.image, self.camera.apply(effect.rect))
 
             self.screen.blit(self.player.image, self.camera.apply(self.player.rect))
             self.player.draw_health_bar(self.screen, self.camera.apply(self.player.rect))
@@ -330,3 +336,6 @@ class Level:
                 coin.kill()
                 coin_sound = pygame.mixer.Sound("assets/sound effect/collect-coin.mp3")
                 coin_sound.play()
+
+                effect = GoldEffect(coin.rect.centerx, coin.rect.centery)
+                self.coin_effect.add(effect)

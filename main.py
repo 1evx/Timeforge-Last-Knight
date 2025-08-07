@@ -48,7 +48,7 @@ def main():
     # After last level, show Demo Complete screen
     demo_screen = DemoEndScreen(screen, Settings)
     demo_screen.active = True
-    showing_demo_screen = True
+    showing_demoddd_screen = True
 
     while showing_demo_screen:
       for event in pygame.event.get():
