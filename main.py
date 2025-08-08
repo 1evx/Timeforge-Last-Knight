@@ -6,8 +6,8 @@ from levels.haze_forest import haze_forest_data
 from levels.crystal_cave import crystal_cave_data
 from levels.dark_castle import dark_castle_data
 from scripts.Menu import Menu
-from scripts.utils import fade
-from scripts.UI import DemoEndScreen 
+from scripts.utils import fade, loading_screen
+from scripts.UI import DemoEndScreen, GameCompleteScreen
 
 def main():
   while True:
@@ -23,6 +23,7 @@ def main():
     pygame.display.set_caption("Timeforge: The Last Knight")
     
     levels = [oak_forest_data, haze_forest_data, crystal_cave_data, dark_castle_data]
+    level_names = ["Oak Forest", "Haze Forest", "Crystal Cave", "Dark Castle"]
     menu = Menu(screen)
     if not menu.run():
       pygame.quit()
@@ -30,8 +31,11 @@ def main():
 
     # Main game level loop
     for i, level_data in enumerate(levels):
-      fade(screen, fade_in=True, speed=5)
-
+      if i == 0:
+        # Show loading screen for the first level
+        loading_screen(screen, level_names[i])
+      else:
+        fade(screen, fade_in=True, speed=5)
 
       level = Level(screen, level_data, money, player_health, player_speed, player_max_health, player_power)
       level.player.gems_collected = gems_collected
@@ -49,24 +53,49 @@ def main():
         return
 
       if i < len(levels) - 1:
+        # Show loading screen for next level
+        next_level_name = level_names[i + 1] if i + 1 < len(level_names) else "Next Level"
+        loading_screen(screen, next_level_name)
+      else:
+        # Fade out for the final level completion
         fade(screen, fade_in=False, speed=5)
 
-    # After last level, show Demo Complete screen
-    demo_screen = DemoEndScreen(screen, Settings)
-    demo_screen.active = True
-    showing_demoddd_screen = True
+    # Check if all gems were collected
+    if gems_collected >= 4:
+        # Show game complete screen
+        game_complete_screen = GameCompleteScreen(screen, Settings)
+        game_complete_screen.active = True
+        showing_complete_screen = True
 
-    while showing_demo_screen:
-      for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-          pygame.quit()
-          return
-        result = demo_screen.handle_event(event)
-        if result == "menu":
-          showing_demo_screen = False  # Go back to menu (loop restarts)
-      
-      demo_screen.draw()
-      pygame.display.flip()
+        while showing_complete_screen:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+                result = game_complete_screen.handle_event(event)
+                if result == "quit":
+                    pygame.quit()
+                    return
+            
+            game_complete_screen.draw()
+            pygame.display.flip()
+    else:
+        # Show Demo Complete screen (if not all gems collected)
+        demo_screen = DemoEndScreen(screen, Settings)
+        demo_screen.active = True
+        showing_demo_screen = True
+
+        while showing_demo_screen:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+                result = demo_screen.handle_event(event)
+                if result == "menu":
+                    showing_demo_screen = False  # Go back to menu (loop restarts)
+            
+            demo_screen.draw()
+            pygame.display.flip()
 
 if __name__ == "__main__":
   main()

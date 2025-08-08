@@ -212,10 +212,17 @@ class Level:
                 self.enemy_group.update()
                 self.gem_group.update()
                 self.projectile_group.update()
+                self.coin_group.update()
+                
+                # Update gem particles
+                if hasattr(self, 'gem_particles'):
+                    for gem in self.gem_particles[:]:
+                        gem.update()
+                        # Remove gems that have finished their particle effects
+                        if not gem.creating_particles and len(gem.particles) == 0:
+                            self.gem_particles.remove(gem)
                 self.camera.update()
                 self.background.update(self.camera.get_offset())
-                self.coin_group.update()
-                self.coin_effect.update()
 
                 self.check_coin_collection()
                 self.check_gem_collection()
@@ -238,6 +245,11 @@ class Level:
                 screen_rect = self.camera.apply(gem.rect)
                 if screen_rect:
                     self.screen.blit(gem.image, screen_rect)
+
+            # Draw gem particle effects
+            if hasattr(self, 'gem_particles'):
+                for gem in self.gem_particles:
+                    gem.draw_particles(self.screen, self.camera.get_offset())
 
             for deco in self.decor_group:
                 self.screen.blit(deco.image, self.camera.apply(deco.rect))
@@ -312,13 +324,23 @@ class Level:
             pygame.display.flip()
 
     def reset_level(self):
+        # Store current gem count before resetting
+        current_gems = self.player.gems_collected if hasattr(self.player, 'gems_collected') else 0
+        
         self.player = Valk(100, SCREEN_HEIGHT - 200, self.current_money, self.current_health, self.current_speed, self.current_max_health, self.current_power)
+        # Restore the gem count
+        self.player.gems_collected = current_gems
+        
         self.camera.follow(self.player)
         self.combat_manager.player = self.player
         self.enemy_group.empty()
         self.projectile_group.empty()
         self.coin_group.empty()
         self.gem_group.empty()  # Add this line
+        
+        # Clear gem particles
+        if hasattr(self, 'gem_particles'):
+            self.gem_particles.clear()
 
         self._initialize_enemies()  # Reuse enemy initialization
         self._initialize_gems()
@@ -364,7 +386,7 @@ class Level:
                 coin_sound = pygame.mixer.Sound("assets/sound effect/collect-coin.mp3")
                 coin_sound.play()
                 
-                 effect = GoldEffect(coin.rect.centerx, coin.rect.centery)
+                effect = GoldEffect(coin.rect.centerx, coin.rect.centery)
                 self.coin_effect.add(effect)
 
     def check_gem_collection(self):
@@ -379,4 +401,12 @@ class Level:
                     gem_sound.play()
                 except:
                     pass
+                
+                # Keep the gem for particle effects even after collection
+                # The gem will be removed from the group but particles will continue
+                gem.kill()
+                # Add to a separate list for particle effects
+                if not hasattr(self, 'gem_particles'):
+                    self.gem_particles = []
+                self.gem_particles.append(gem)
 
