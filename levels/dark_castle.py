@@ -42,5 +42,8 @@ dark_castle_data = {
 
     {"type": "Deathborne", "pos": [6700, SCREEN_HEIGHT - 325]},
     {"type": "Necromancer", "pos": [6800, SCREEN_HEIGHT - 272]},
+  ],
+  "gems": [
+    {"type": "amethyst", "pos": [7500, SCREEN_HEIGHT - 250]},  # Purple gem
   ]
 }

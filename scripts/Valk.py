@@ -505,7 +505,7 @@ class Valk(pygame.sprite.Sprite):
     gem_y = 60  # Below the gold counter
 
     font = pygame.font.Font(None, 36)
-    gem_text = font.render(f"Gems: {self.gems_collected}", True, (200, 200, 255))
+    gem_text = font.render(f"Gems: {self.gems_collected}/4", True, (200, 200, 255))
 
     # Create a simple gem icon
     gem_icon = self.create_gem_icon()
