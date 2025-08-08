@@ -13,7 +13,10 @@ def main():
   while True:
     money = 0
     player_health = 10
-    gems_collected = 0  # Add gem counter
+    gems_collected = 0
+    player_speed = 5
+    player_max_health = 10
+    player_power = 1
     
     pygame.init()
     screen = pygame.display.set_mode((Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT))
@@ -28,13 +31,18 @@ def main():
     # Main game level loop
     for i, level_data in enumerate(levels):
       fade(screen, fade_in=True, speed=5)
-      level = Level(screen, level_data, money, player_health)
-      # Set the gem count for the player
+
+
+      level = Level(screen, level_data, money, player_health, player_speed, player_max_health, player_power)
       level.player.gems_collected = gems_collected
       level.run()
       money = level.player.money
       player_health = level.player.health
-      gems_collected = level.player.gems_collected  # Track gems between levels
+      player_speed = level.player.speed
+      player_max_health = level.player.max_health
+      player_power = level.player.attack_power
+      gems_collected = level.player.gems_collected
+  
 
       if not level.has_finished:
         pygame.quit()
@@ -46,7 +54,7 @@ def main():
     # After last level, show Demo Complete screen
     demo_screen = DemoEndScreen(screen, Settings)
     demo_screen.active = True
-    showing_demo_screen = True
+    showing_demoddd_screen = True
 
     while showing_demo_screen:
       for event in pygame.event.get():

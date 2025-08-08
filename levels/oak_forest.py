@@ -53,6 +53,8 @@ oak_forest_data = {
   ],
   "enemies": [
     {"type": "PracticeTarget", "pos": [2600, SCREEN_HEIGHT - 160]}, 
+    {"type": "Slime", "pos": [3500, SCREEN_HEIGHT - 120]},
+    {"type": "Slime", "pos": [4000, SCREEN_HEIGHT - 120]},
     {"type": "Slime", "pos": [5800, SCREEN_HEIGHT - 120]},
     {"type": "Slime", "pos": [6300, SCREEN_HEIGHT - 120]},
   ],
