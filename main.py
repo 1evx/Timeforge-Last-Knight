@@ -13,6 +13,7 @@ def main():
   while True:
     money = 0
     player_health = 10
+    gems_collected = 0  # Add gem counter
     
     pygame.init()
     screen = pygame.display.set_mode((Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT))
@@ -28,9 +29,12 @@ def main():
     for i, level_data in enumerate(levels):
       fade(screen, fade_in=True, speed=5)
       level = Level(screen, level_data, money, player_health)
+      # Set the gem count for the player
+      level.player.gems_collected = gems_collected
       level.run()
       money = level.player.money
       player_health = level.player.health
+      gems_collected = level.player.gems_collected  # Track gems between levels
 
       if not level.has_finished:
         pygame.quit()

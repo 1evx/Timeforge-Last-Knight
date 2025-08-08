@@ -46,5 +46,8 @@ crystal_cave_data = {
     {"type": "Skeleton", "pos": [6500, SCREEN_HEIGHT - 185]},
     {"type": "Fireborne", "pos": [6700, SCREEN_HEIGHT - 370]},
     {"type": "Necromancer", "pos": [6600, SCREEN_HEIGHT - 272]},
+  ],
+  "gems": [
+    {"type": "ruby", "pos": [7500, SCREEN_HEIGHT - 250]},  # Red gem
   ]
 }

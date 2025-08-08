@@ -20,6 +20,7 @@ from scripts.PracticeTarget import PracticeTarget
 from scripts.Platform import Platform
 from scripts.combat_manager import CombatManager
 from assets.decorations.deco import DECOR_DEFINITIONS
+from scripts.Gem import Gem
 
 class Level:
     def __init__(self, screen, level_data, money, health):
@@ -75,11 +76,13 @@ class Level:
         self.current_money = money
 
 
-        # Enemies, projectiles, and coins
+        # Enemies, projectiles, and coins, gems
         self.enemy_group = pygame.sprite.Group()
         self.projectile_group = pygame.sprite.Group()
         self.coin_group = pygame.sprite.Group()
+        self.gem_group = pygame.sprite.Group()
         self._initialize_enemies()
+        self._initialize_gems()
 
         self.combat_manager = CombatManager(self.player, self.enemy_group)
         self.game_over_popup = GameOverPopup(self.screen, Settings)
@@ -120,6 +123,15 @@ class Level:
             if enemy is not None:
                 self.enemy_group.add(enemy)
 
+    def _initialize_gems(self):
+        """Initialize gems based on level data."""
+        if "gems" in self.level_data:
+            for gem_info in self.level_data["gems"]:
+                gem_type = gem_info.get("type", "ruby")
+                x, y = gem_info["pos"]
+                gem = Gem(x, y, gem_type)
+                self.gem_group.add(gem)
+
     def run(self):
         while self.running:
             self.clock.tick(FPS)
@@ -147,12 +159,14 @@ class Level:
                 self.player.update(keys, self.platforms)
                 self.decor_group.update()
                 self.enemy_group.update()
+                self.gem_group.update()
                 self.projectile_group.update()
                 self.coin_group.update()
                 self.camera.update()
                 self.background.update(self.camera.get_offset())
 
                 self.check_coin_collection()
+                self.check_gem_collection()
 
                 if not self.player.alive and self.state != "death_wait":
                     self.state = "death_wait"
@@ -167,6 +181,11 @@ class Level:
 
             # Draw
             self.background.draw(self.screen)
+
+            for gem in self.gem_group:
+                screen_rect = self.camera.apply(gem.rect)
+                if screen_rect:
+                    self.screen.blit(gem.image, screen_rect)
 
             for deco in self.decor_group:
                 self.screen.blit(deco.image, self.camera.apply(deco.rect))
@@ -209,6 +228,7 @@ class Level:
             self.player.draw_health_bar(self.screen, self.camera.apply(self.player.rect))
             self.player.draw_hud_health_bar(self.screen)
             self.player.draw_hud_gold(self.screen)
+            self.player.draw_hud_gems(self.screen)  # Add this line
 
             if self.state == "game_over":
                 pygame.mixer.music.stop()
@@ -235,8 +255,10 @@ class Level:
         self.enemy_group.empty()
         self.projectile_group.empty()
         self.coin_group.empty()
+        self.gem_group.empty()  # Add this line
 
         self._initialize_enemies()  # Reuse enemy initialization
+        self._initialize_gems()
 
         self.state = "playing"
         self.game_over_popup.active = False
@@ -278,3 +300,16 @@ class Level:
                 coin.kill()
                 coin_sound = pygame.mixer.Sound("assets/sound effect/collect-coin.mp3")
                 coin_sound.play()
+
+    def check_gem_collection(self):
+        for gem in self.gem_group.copy():
+            if gem.can_be_collected(self.player.rect):
+                gem.collect()
+                self.player.gems_collected += 1  # Add this line
+                # Restore full health when gem is collected
+                self.player.health = 10  # Restore to max health
+                try:
+                    gem_sound = pygame.mixer.Sound("assets/sound effect/collect-coin.mp3")
+                    gem_sound.play()
+                except:
+                    pass
