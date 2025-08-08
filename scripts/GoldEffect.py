@@ -24,7 +24,7 @@ class GoldEffect(pygame.sprite.Sprite):
                 'y': 0,
                 'vx': math.cos(angle) * speed,
                 'vy': math.sin(angle) * speed,
-                'size': 8,
+                'size': 15,
                 'life': 8000,
                 'max_life': 8000
             }

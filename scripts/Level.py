@@ -213,7 +213,8 @@ class Level:
                 self.gem_group.update()
                 self.projectile_group.update()
                 self.coin_group.update()
-                
+                self.coin_effect.update()
+
                 # Update gem particles
                 if hasattr(self, 'gem_particles'):
                     for gem in self.gem_particles[:]:
