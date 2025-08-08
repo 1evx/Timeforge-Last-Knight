@@ -30,6 +30,7 @@ class Valk(pygame.sprite.Sprite):
     self.health = health
     self.max_health = max_health
     self.money = money
+    self.gems_collected = 0  # Add gem counter
     self.invincibility_time = 4000  # ms
     self.knockback_velocity = 20
     self.knockback_timer = 200
@@ -497,3 +498,41 @@ class Valk(pygame.sprite.Sprite):
 
     surface.blit(self.hud_coin.image, (coin_x, gold_y))
     surface.blit(gold_text, (text_x, gold_y))
+
+  def draw_hud_gems(self, surface):
+    """Draw gem counter in the top right"""
+    gem_x = Settings.SCREEN_WIDTH - 140
+    gem_y = 60  # Below the gold counter
+
+    font = pygame.font.Font(None, 36)
+    gem_text = font.render(f"Gems: {self.gems_collected}", True, (200, 200, 255))
+
+    # Create a simple gem icon
+    gem_icon = self.create_gem_icon()
+    
+    icon_x = gem_x - 40
+    text_x = gem_x
+
+    surface.blit(gem_icon, (icon_x, gem_y))
+    surface.blit(gem_text, (text_x, gem_y))
+
+  def create_gem_icon(self):
+    """Create a small gem icon for the HUD"""
+    surface = pygame.Surface((32, 32), pygame.SRCALPHA)
+    
+    # Create a small diamond shape
+    points = [
+        (16, 3),   # Top
+        (24, 13),  # Right
+        (16, 23),  # Bottom
+        (8, 13),   # Left
+    ]
+    
+    # Draw the gem with light blue color
+    pygame.draw.polygon(surface, (200, 200, 255), points)
+    pygame.draw.polygon(surface, (255, 255, 255), points, 1)  # White border
+    
+    # Add sparkle
+    pygame.draw.circle(surface, (255, 255, 255), (13, 10), 1)
+    
+    return surface

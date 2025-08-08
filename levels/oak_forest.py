@@ -57,6 +57,9 @@ oak_forest_data = {
     {"type": "Slime", "pos": [4000, SCREEN_HEIGHT - 120]},
     {"type": "Slime", "pos": [5800, SCREEN_HEIGHT - 120]},
     {"type": "Slime", "pos": [6300, SCREEN_HEIGHT - 120]},
+  ],
+  "gems": [
+    {"type": "sapphire", "pos": [7500, SCREEN_HEIGHT - 250]},
   ]
 }
 

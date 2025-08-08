@@ -66,4 +66,7 @@ haze_forest_data = {
     # {"type": "Necromancer", "pos": [4500, SCREEN_HEIGHT - 272]},
     # {"type": "Necromancer", "pos": [4600, SCREEN_HEIGHT - 272]},
   ],
+  "gems": [
+    {"type": "emerald", "pos": [7500, SCREEN_HEIGHT - 250]},  # Green gem
+  ]
 }
