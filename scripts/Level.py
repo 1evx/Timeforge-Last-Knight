@@ -394,10 +394,9 @@ class Level:
             if gem.can_be_collected(self.player.rect):
                 gem.collect()
                 self.player.gems_collected += 1  # Add this line
-                # Restore full health when gem is collected
-                self.player.health = 10  # Restore to max health
+                # Remove health restoration - gems only count for collection
                 try:
-                    gem_sound = pygame.mixer.Sound("assets/sound effect/collect-coin.mp3")
+                    gem_sound = pygame.mixer.Sound("assets/sound effect/collect-gem.wav")
                     gem_sound.play()
                 except:
                     pass

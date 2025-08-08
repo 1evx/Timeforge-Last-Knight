@@ -149,7 +149,7 @@ class GameCompleteScreen:
         """Create positions for the 4 gems to display"""
         center_x = self.settings.SCREEN_WIDTH // 2
         center_y = self.settings.SCREEN_HEIGHT // 2 - 50
-        spacing = 80
+        spacing = 150
         
         self.gem_positions = [
             (center_x - spacing * 1.5, center_y),  # Left gem
