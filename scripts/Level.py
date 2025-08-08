@@ -358,7 +358,25 @@ class Level:
         self.running = False
 
     def check_level_complete(self):
-        return self.player.rect.right >= self.level_width + 130
+        # Check if player has reached the end of the level
+        if self.player.rect.right < self.level_width + 130:
+            return False
+        
+        # Check if all enemies have been eliminated
+        for enemy in self.enemy_group:
+            # Skip PracticeTarget objects
+            if isinstance(enemy, PracticeTarget):
+                continue
+            
+            # Check if enemy is still alive
+            if hasattr(enemy, 'alive'):
+                if enemy.alive:
+                    return False
+            # For enemies without 'alive' attribute, check if they have health > 0
+            elif hasattr(enemy, 'health') and enemy.health > 0:
+                return False
+        
+        return True
 
     def create_decor_sprite(self, decor_type, pos):
         image = pygame.image.load(DECOR_DEFINITIONS[decor_type]["path"]).convert_alpha()
