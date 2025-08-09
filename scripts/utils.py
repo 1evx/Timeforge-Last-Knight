@@ -1,4 +1,5 @@
 import pygame, os
+import math
 
 def load_sprite_folder(path, scale=3):
   frames = []
@@ -163,3 +164,144 @@ def fade(screen, fade_in=True, speed=5):
     screen.blit(fade_surface, (0, 0))
     pygame.display.flip()
     clock.tick(60)
+
+
+def loading_screen(screen, level_name="Next Level"):
+    """Display a loading screen with progress bar during level transitions."""
+    clock = pygame.time.Clock()
+    progress = 0
+    loading_done = False
+    
+    # Colors
+    background_color = (20, 20, 40)
+    bar_bg_color = (60, 60, 80)
+    bar_fill_color = (100, 150, 255)
+    text_color = (255, 255, 255)
+    title_color = (200, 200, 255)
+    
+    # Fonts
+    title_font = pygame.font.Font(None, 48)
+    text_font = pygame.font.Font(None, 32)
+    small_font = pygame.font.Font(None, 24)
+    
+    # Bar dimensions
+    bar_width = 400
+    bar_height = 20
+    bar_x = (screen.get_width() - bar_width) // 2
+    bar_y = screen.get_height() // 2 + 50
+    
+    # Loading messages
+    loading_messages = [
+        "Loading level assets...",
+        "Preparing enemies...",
+        "Setting up environment...",
+        "Almost ready...",
+        "Level complete!"
+    ]
+    
+    current_message = 0
+    message_timer = 0
+    start_time = pygame.time.get_ticks()
+    
+    while not loading_done:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+        
+        current_time = pygame.time.get_ticks()
+        elapsed_time = current_time - start_time
+        
+        # Update progress (simulate loading with easing)
+        if progress < 100:
+            # Use easing for smoother progress
+            progress += 1.5  # Slower, more realistic progress
+            if progress > 100:
+                progress = 100
+        
+        # Update loading message based on progress
+        if progress < 20:
+            current_message = 0
+        elif progress < 40:
+            current_message = 1
+        elif progress < 70:
+            current_message = 2
+        elif progress < 90:
+            current_message = 3
+        else:
+            current_message = 4
+        
+        # Check if loading is complete
+        if progress >= 100 and elapsed_time > 2000:  # Minimum 2 seconds
+            loading_done = True
+        
+        # Draw background with gradient effect
+        screen.fill(background_color)
+        
+        # Draw animated background stars
+        for i in range(8):
+            x = (i * 200 + elapsed_time // 3) % screen.get_width()
+            y = (i * 150 + 100) % (screen.get_height() // 2)
+            alpha = 100 + int(50 * (math.sin(elapsed_time / 1000 + i) + 1))
+            color = (255, 255, 255, alpha)
+            pygame.draw.circle(screen, color, (int(x), int(y)), 1)
+        
+        # Draw title with glow effect
+        title_text = title_font.render(f"Loading {level_name}", True, title_color)
+        title_rect = title_text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 100))
+        
+        # Add a subtle glow effect
+        glow_surf = pygame.Surface(title_text.get_size(), pygame.SRCALPHA)
+        glow_surf.fill((200, 200, 255, 50))
+        screen.blit(glow_surf, (title_rect.x + 2, title_rect.y + 2))
+        screen.blit(title_text, title_rect)
+        
+        # Draw progress bar background with rounded corners effect
+        bar_bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
+        pygame.draw.rect(screen, bar_bg_color, bar_bg_rect)
+        pygame.draw.rect(screen, (100, 100, 120), bar_bg_rect, 2)
+        
+        # Draw progress bar fill with animation
+        fill_width = int((progress / 100) * bar_width)
+        if fill_width > 0:
+            bar_fill_rect = pygame.Rect(bar_x, bar_y, fill_width, bar_height)
+            # Create gradient effect for the fill
+            for i in range(fill_width):
+                gradient_ratio = i / fill_width
+                r = int(100 + gradient_ratio * 50)
+                g = int(150 + gradient_ratio * 50)
+                b = int(255 - gradient_ratio * 50)
+                pygame.draw.line(screen, (r, g, b), 
+                               (bar_x + i, bar_y), 
+                               (bar_x + i, bar_y + bar_height))
+            
+            # Add a subtle pulse effect at the end of the progress bar
+            pulse_alpha = int(100 + 50 * math.sin(elapsed_time / 200))
+            pulse_color = (255, 255, 255, pulse_alpha)
+            pygame.draw.line(screen, pulse_color, 
+                           (bar_x + fill_width - 1, bar_y), 
+                           (bar_x + fill_width - 1, bar_y + bar_height))
+        
+        # Draw progress percentage with animation
+        progress_text = text_font.render(f"{int(progress)}%", True, text_color)
+        progress_rect = progress_text.get_rect(center=(screen.get_width() // 2, bar_y + bar_height + 30))
+        screen.blit(progress_text, progress_rect)
+        
+        # Draw loading message with fade effect
+        message_text = small_font.render(loading_messages[current_message], True, text_color)
+        message_rect = message_text.get_rect(center=(screen.get_width() // 2, bar_y - 30))
+        screen.blit(message_text, message_rect)
+        
+        # Draw decorative loading dots
+        dots_x = screen.get_width() // 2 - 30
+        dots_y = bar_y + bar_height + 60
+        for i in range(3):
+            dot_alpha = 255 if (elapsed_time // 200 + i) % 3 == 0 else 100
+            dot_color = (255, 255, 255, dot_alpha)
+            pygame.draw.circle(screen, dot_color, (dots_x + i * 20, dots_y), 3)
+        
+        pygame.display.flip()
+        clock.tick(60)
+    
+    # Brief pause at the end
+    pygame.time.wait(500)

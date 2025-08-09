@@ -1,5 +1,6 @@
 import pygame
 from scripts import Settings
+from scripts.GoldEffect import GoldEffect
 from scripts.Settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
 from scripts.UI import GameOverPopup
 from scripts.Valk import Valk
@@ -19,7 +20,9 @@ from scripts.Shop import Shop
 from scripts.PracticeTarget import PracticeTarget
 from scripts.Platform import Platform
 from scripts.combat_manager import CombatManager
+from scripts.tutorials import Tutorial
 from assets.decorations.deco import DECOR_DEFINITIONS
+from scripts.Gem import Gem
 
 class Level:
     def __init__(self, screen, level_data, money, health, speed, max_health, power):
@@ -79,11 +82,25 @@ class Level:
         self.current_money = money
         self.current_power = power
 
-        # Enemies, projectiles, and coins
+        # Tutorial system (only for oak forest level)
+        self.tutorial = None
+        # Check if this is the oak forest level by checking the level data structure
+        if (self.level_data.get('level_width') == 8000 and 
+            self.level_data.get('tiles_per_row') == 100 and
+            'hall-of-king.mp3' in self.level_data.get('background_music', '')):
+            self.tutorial = Tutorial(self.screen)
+
+        # Enemies, projectiles, and coins, gems
         self.enemy_group = pygame.sprite.Group()
         self.projectile_group = pygame.sprite.Group()
         self.coin_group = pygame.sprite.Group()
+
+        self.gem_group = pygame.sprite.Group()
+
+        self.coin_effect = pygame.sprite.Group()
+
         self._initialize_enemies()
+        self._initialize_gems()
 
         self.combat_manager = CombatManager(self.player, self.enemy_group)
         self.game_over_popup = GameOverPopup(self.screen, Settings)
@@ -124,6 +141,15 @@ class Level:
             if enemy is not None:
                 self.enemy_group.add(enemy)
 
+    def _initialize_gems(self):
+        """Initialize gems based on level data."""
+        if "gems" in self.level_data:
+            for gem_info in self.level_data["gems"]:
+                gem_type = gem_info.get("type", "ruby")
+                x, y = gem_info["pos"]
+                gem = Gem(x, y, gem_type)
+                self.gem_group.add(gem)
+
     def run(self):
         while self.running:
             self.clock.tick(FPS)
@@ -160,8 +186,12 @@ class Level:
                                 shop.show_ui = True
                                 break  # Only open one shop
 
+                    # Handle tutorial completion input
+                    if self.tutorial and self.tutorial.handle_completion_input(event):
+                        self.tutorial = None  # Remove tutorial after completion
+                        continue
 
-                    # Only allow combat input if no UI is active
+                    # Only allow combat input if no UI is active    
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 1:
                             self.player.attack()
@@ -169,18 +199,34 @@ class Level:
                             self.player.dash_attack()
 
             if self.state == "playing":
+                # Update tutorial if active
+                if self.tutorial and not self.tutorial.is_tutorial_complete():
+                    mouse_buttons = pygame.mouse.get_pressed()
+                    self.tutorial.update(keys, mouse_buttons, self.player)
+                
                 self.combat_manager.check_collisions()
                 self.player.update(keys, self.platforms)
                 self.decor_group.update()
                 self.shop_group.update(self.player)
                 for shop in self.shop_group: shop.check_interaction(self.player)
                 self.enemy_group.update()
+                self.gem_group.update()
                 self.projectile_group.update()
                 self.coin_group.update()
+                self.coin_effect.update()
+
+                # Update gem particles
+                if hasattr(self, 'gem_particles'):
+                    for gem in self.gem_particles[:]:
+                        gem.update()
+                        # Remove gems that have finished their particle effects
+                        if not gem.creating_particles and len(gem.particles) == 0:
+                            self.gem_particles.remove(gem)
                 self.camera.update()
                 self.background.update(self.camera.get_offset())
 
                 self.check_coin_collection()
+                self.check_gem_collection()
 
                 if not self.player.alive and self.state != "death_wait":
                     self.state = "death_wait"
@@ -195,6 +241,16 @@ class Level:
 
             # Draw
             self.background.draw(self.screen)
+
+            for gem in self.gem_group:
+                screen_rect = self.camera.apply(gem.rect)
+                if screen_rect:
+                    self.screen.blit(gem.image, screen_rect)
+
+            # Draw gem particle effects
+            if hasattr(self, 'gem_particles'):
+                for gem in self.gem_particles:
+                    gem.draw_particles(self.screen, self.camera.get_offset())
 
             for deco in self.decor_group:
                 self.screen.blit(deco.image, self.camera.apply(deco.rect))
@@ -228,10 +284,23 @@ class Level:
             for coin in self.coin_group:
                 self.screen.blit(coin.image, self.camera.apply(coin.rect))
 
+            for effect in self.coin_effect:
+                self.screen.blit(effect.image, self.camera.apply(effect.rect))
+
             self.screen.blit(self.player.image, self.camera.apply(self.player.rect))
             self.player.draw_health_bar(self.screen, self.camera.apply(self.player.rect))
             self.player.draw_hud_status_bars(self.screen)
             self.player.draw_hud_gold(self.screen)
+            self.player.draw_hud_gems(self.screen)  # Add this line
+
+            
+            # Draw tutorial UI
+            if self.tutorial:
+                if self.tutorial.is_tutorial_complete():
+                    self.tutorial.draw_completion_screen()
+                else:
+                    self.tutorial.draw()
+
 
             if self.state == "game_over":
                 pygame.mixer.music.stop()
@@ -241,7 +310,11 @@ class Level:
                     self.game_over_sound_played = True
                 self.game_over_popup.draw()
 
-            if self.check_level_complete():
+            # Check level completion (for oak forest, require tutorial completion)
+            if self.tutorial and not self.tutorial.is_tutorial_complete():
+                # Don't complete level until tutorial is done
+                pass
+            elif self.check_level_complete():
                 self.has_finished = True
                 self.running = False
             if self.has_finished:
@@ -252,14 +325,26 @@ class Level:
             pygame.display.flip()
 
     def reset_level(self):
+        # Store current gem count before resetting
+        current_gems = self.player.gems_collected if hasattr(self.player, 'gems_collected') else 0
+        
         self.player = Valk(100, SCREEN_HEIGHT - 200, self.current_money, self.current_health, self.current_speed, self.current_max_health, self.current_power)
+        # Restore the gem count
+        self.player.gems_collected = current_gems
+        
         self.camera.follow(self.player)
         self.combat_manager.player = self.player
         self.enemy_group.empty()
         self.projectile_group.empty()
         self.coin_group.empty()
+        self.gem_group.empty()  # Add this line
+        
+        # Clear gem particles
+        if hasattr(self, 'gem_particles'):
+            self.gem_particles.clear()
 
         self._initialize_enemies()  # Reuse enemy initialization
+        self._initialize_gems()
 
         self.state = "playing"
         self.game_over_popup.active = False
@@ -273,7 +358,25 @@ class Level:
         self.running = False
 
     def check_level_complete(self):
-        return self.player.rect.right >= self.level_width + 130
+        # Check if player has reached the end of the level
+        if self.player.rect.right < self.level_width + 130:
+            return False
+        
+        # Check if all enemies have been eliminated
+        for enemy in self.enemy_group:
+            # Skip PracticeTarget objects
+            if isinstance(enemy, PracticeTarget):
+                continue
+            
+            # Check if enemy is still alive
+            if hasattr(enemy, 'alive'):
+                if enemy.alive:
+                    return False
+            # For enemies without 'alive' attribute, check if they have health > 0
+            elif hasattr(enemy, 'health') and enemy.health > 0:
+                return False
+        
+        return True
 
     def create_decor_sprite(self, decor_type, pos):
         image = pygame.image.load(DECOR_DEFINITIONS[decor_type]["path"]).convert_alpha()
@@ -301,3 +404,27 @@ class Level:
                 coin.kill()
                 coin_sound = pygame.mixer.Sound("assets/sound effect/collect-coin.mp3")
                 coin_sound.play()
+                
+                effect = GoldEffect(coin.rect.centerx, coin.rect.centery)
+                self.coin_effect.add(effect)
+
+    def check_gem_collection(self):
+        for gem in self.gem_group.copy():
+            if gem.can_be_collected(self.player.rect):
+                gem.collect()
+                self.player.gems_collected += 1  # Add this line
+                # Remove health restoration - gems only count for collection
+                try:
+                    gem_sound = pygame.mixer.Sound("assets/sound effect/collect-gem.wav")
+                    gem_sound.play()
+                except:
+                    pass
+                
+                # Keep the gem for particle effects even after collection
+                # The gem will be removed from the group but particles will continue
+                gem.kill()
+                # Add to a separate list for particle effects
+                if not hasattr(self, 'gem_particles'):
+                    self.gem_particles = []
+                self.gem_particles.append(gem)
+
