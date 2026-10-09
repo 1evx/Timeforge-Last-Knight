@@ -89,17 +89,3 @@ The Oak Forest introduces the controls through an in-game tutorial. Complete eac
 ├── levels/             # Data and layouts for the four stages
 └── scripts/            # Player, enemies, UI, combat, camera, shop, and utilities
 ```
-
-## Development
-
-Most global gameplay settings, including resolution, frame rate, gravity, and jump velocity, are defined in `scripts/Settings.py`. Level layouts and their enemy, collectible, decoration, music, and background configuration live in `levels/`.
-
-Before submitting a change, you can check all Python files for syntax errors with:
-
-```bash
-python -m compileall -q main.py scripts levels assets/decorations
-```
-
-## License and Assets
-
-No license is currently included in this repository. Unless the project owner states otherwise, the code and bundled assets should be treated as all rights reserved. If you are the project owner, consider adding a `LICENSE` file and documenting the sources and licenses of third-party art, music, fonts, and sound effects.
